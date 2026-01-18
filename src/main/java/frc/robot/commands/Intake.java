@@ -27,7 +27,7 @@ public class Intake extends Command {
   @Override
   public void execute() {
     System.out.println("Running intake");
-    intake_s.setVoltage(3);
+    intake_s.setVoltage(4);
   }
 
   // Called once the command ends or is interrupted.

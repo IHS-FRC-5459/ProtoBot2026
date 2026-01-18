@@ -24,13 +24,13 @@ public class Outtake extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    outtake_s.setSpeed(0.01);
+    outtake_s.setVoltage(12);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    outtake_s.setSpeed(0);
+    outtake_s.setVoltage(0);
   }
 
   // Returns true when the command should end.

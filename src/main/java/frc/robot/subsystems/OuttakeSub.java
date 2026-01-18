@@ -16,11 +16,11 @@ public class OuttakeSub extends SubsystemBase {
     controller = new SparkMax(14, MotorType.kBrushed);
   }
 
-  public void setSpeed(double speed) {
-    controller.set(-speed);
+  public void setVoltage(double volts) {
+    controller.setVoltage(-volts);
   }
 
-  public double getSpeed() {
+  public double getVoltage() {
     return -controller.get();
   }
 
