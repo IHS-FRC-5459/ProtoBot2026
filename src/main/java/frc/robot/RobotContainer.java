@@ -28,7 +28,11 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.Intake;
+import frc.robot.commands.Outtake;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.IntakeSub;
+import frc.robot.subsystems.OuttakeSub;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -52,6 +56,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+  private IntakeSub intake_s;
+  private OuttakeSub outtake_s;
   // private final Vision vision;
   private final Vision vision;
   // Sensors
@@ -80,6 +86,8 @@ public class RobotContainer {
                 new VisionIOPhotonVision(camera0Name, robotToCamera0),
                 new VisionIOPhotonVision(camera1Name, robotToCamera1));
         pigeon = new Pigeon2(Constants.Sensors.Pigeon.id, Constants.Sensors.Pigeon.canbus);
+        intake_s = new IntakeSub();
+        outtake_s = new OuttakeSub();
         // vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
         break;
 
@@ -99,6 +107,8 @@ public class RobotContainer {
                 new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
         pigeon = new Pigeon2(Constants.Sensors.Pigeon.id, Constants.Sensors.Pigeon.canbus);
         // vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
+        intake_s = new IntakeSub();
+        outtake_s = new OuttakeSub();
 
         break;
 
@@ -114,6 +124,8 @@ public class RobotContainer {
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
         pigeon = new Pigeon2(Constants.Sensors.Pigeon.id, Constants.Sensors.Pigeon.canbus);
         // vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
+        intake_s = new IntakeSub();
+        outtake_s = new OuttakeSub();
 
         break;
     }
@@ -185,6 +197,9 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
                     drive)
                 .ignoringDisable(true));
+
+    controller.leftTrigger(0.02).whileTrue(new Intake(intake_s));
+    controller.rightTrigger(0.02).whileTrue(new Outtake(outtake_s));
   }
 
   /**
