@@ -29,7 +29,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.Intake;
-import frc.robot.commands.Outtake;
+import frc.robot.commands.Shoot;
+import frc.robot.commands.ShootAlign;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.IntakeSub;
 import frc.robot.subsystems.OuttakeSub;
@@ -199,7 +200,8 @@ public class RobotContainer {
                 .ignoringDisable(true));
 
     controller.leftTrigger(0.02).whileTrue(new Intake(intake_s));
-    controller.rightTrigger(0.02).whileTrue(new Outtake(outtake_s));
+    controller.rightTrigger(0.02).whileTrue(new Shoot(outtake_s, drive));
+    controller.a().whileTrue(new ShootAlign(drive));
   }
 
   /**

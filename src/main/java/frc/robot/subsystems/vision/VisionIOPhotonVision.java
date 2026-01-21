@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
 
 /** IO implementation for real PhotonVision hardware. */
@@ -32,6 +33,7 @@ public class VisionIOPhotonVision implements VisionIO {
   public VisionIOPhotonVision(String name, Transform3d robotToCamera) {
     camera = new PhotonCamera(name);
     this.robotToCamera = robotToCamera;
+    System.out.println("Made camera: " + name);
   }
 
   @Override
@@ -51,6 +53,8 @@ public class VisionIOPhotonVision implements VisionIO {
       } else {
         inputs.latestTargetObservation = new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
       }
+      Logger.recordOutput("Multitag present", result.multitagResult.isPresent());
+      Logger.recordOutput("Empty", result.targets.isEmpty());
 
       // Add pose observation
       if (result.multitagResult.isPresent()) { // Multitag result
@@ -66,11 +70,11 @@ public class VisionIOPhotonVision implements VisionIO {
         for (var target : result.targets) {
           totalTagDistance += target.bestCameraToTarget.getTranslation().getNorm();
         }
-
+        Logger.recordOutput("Adding tag ids normally", true);
         // Add tag IDs
         tagIds.addAll(multitagResult.fiducialIDsUsed);
-
         // Add observation
+        Logger.recordOutput("h", true);
         poseObservations.add(
             new PoseObservation(
                 result.getTimestampSeconds(), // Timestamp
@@ -82,10 +86,12 @@ public class VisionIOPhotonVision implements VisionIO {
 
       } else if (!result.targets.isEmpty()) { // Single tag result
         var target = result.targets.get(0);
-
         // Calculate robot pose
         var tagPose = aprilTagLayout.getTagPose(target.fiducialId);
+        Logger.recordOutput("Tag id", target.getFiducialId());
         if (tagPose.isPresent()) {
+          System.out.println("Tag pose present");
+          Logger.recordOutput("Tag pose present", true);
           Transform3d fieldToTarget =
               new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
           Transform3d cameraToTarget = target.bestCameraToTarget;
@@ -94,7 +100,9 @@ public class VisionIOPhotonVision implements VisionIO {
           Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
           // Add tag ID
+          Logger.recordOutput("Adding tag ids normally", false);
           tagIds.add((short) target.fiducialId);
+          Logger.recordOutput("h", false);
 
           // Add observation
           poseObservations.add(
