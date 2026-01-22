@@ -9,6 +9,7 @@ package frc.robot.subsystems.vision;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -19,7 +20,11 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
@@ -33,8 +38,18 @@ public class Vision extends SubsystemBase {
   public Vision(VisionConsumer consumer, VisionIO... io) {
     this.consumer = consumer;
     this.io = io;
-
-    // Initialize inputs
+    if (!Robot.isSimulation()) {
+      try {
+        Path path = Paths.get("/home/lvuser/deploy/field.json");
+        if (Files.exists(path)) {
+          aprilTagLayout = new AprilTagFieldLayout(path);
+        } else {
+          System.out.println("File does not exist");
+        }
+      } catch (Exception e) {
+        System.out.println("Error: " + e);
+      }
+    } // Initialize inputs
     this.inputs = new VisionIOInputsAutoLogged[io.length];
     for (int i = 0; i < inputs.length; i++) {
       inputs[i] = new VisionIOInputsAutoLogged();
@@ -135,7 +150,8 @@ public class Vision extends SubsystemBase {
         consumer.accept(
             observation.pose().toPose2d(),
             observation.timestamp(),
-            VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
+            VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev)
+                .times(10)); // Added to make less jumpy
       }
       // Log camera metadata
       Logger.recordOutput(

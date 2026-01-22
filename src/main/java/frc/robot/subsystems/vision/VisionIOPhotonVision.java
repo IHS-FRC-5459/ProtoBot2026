@@ -74,7 +74,6 @@ public class VisionIOPhotonVision implements VisionIO {
         // Add tag IDs
         tagIds.addAll(multitagResult.fiducialIDsUsed);
         // Add observation
-        Logger.recordOutput("h", true);
         poseObservations.add(
             new PoseObservation(
                 result.getTimestampSeconds(), // Timestamp
@@ -90,8 +89,6 @@ public class VisionIOPhotonVision implements VisionIO {
         var tagPose = aprilTagLayout.getTagPose(target.fiducialId);
         Logger.recordOutput("Tag id", target.getFiducialId());
         if (tagPose.isPresent()) {
-          System.out.println("Tag pose present");
-          Logger.recordOutput("Tag pose present", true);
           Transform3d fieldToTarget =
               new Transform3d(tagPose.get().getTranslation(), tagPose.get().getRotation());
           Transform3d cameraToTarget = target.bestCameraToTarget;

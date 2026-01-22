@@ -5,22 +5,20 @@
 package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Inches;
+import static frc.robot.subsystems.vision.VisionConstants.*;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.OuttakeSub;
 import frc.robot.subsystems.drive.Drive;
+import org.littletonrobotics.junction.Logger;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class Shoot extends Command {
   private OuttakeSub s_outtake;
   private Drive s_drive;
-  public static AprilTagFieldLayout aprilTagLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
   /** Creates a new Outtake. */
   public Shoot(OuttakeSub s_outtake, Drive s_drive) {
     // Only uding drive for pos, so dont add req
@@ -31,7 +29,10 @@ public class Shoot extends Command {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    Logger.recordOutput("Shoot/Shooter volts", 0);
+    Logger.recordOutput("Shoot/Desired shooter volts", 0);
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
@@ -60,13 +61,20 @@ public class Shoot extends Command {
       return;
     }
     double reqVelocity = Math.sqrt((g * Math.pow(deltaX, 2)) / denominator);
+    Logger.recordOutput("Shoot/req velocity", reqVelocity);
+
     double reqVoltage = 4 * reqVelocity; // Very bad conversion, TODO: Change
+    Logger.recordOutput("Shoot/Shooter volts", (int) MathUtil.clamp(reqVoltage, 0.0, 12.0));
+    Logger.recordOutput("Shoot/Desired shooter volts", (int) reqVoltage);
     s_outtake.setVoltage(MathUtil.clamp(reqVoltage, 0.0, 12.0));
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    Logger.recordOutput("Shoot/Shooter volts", 0);
+    Logger.recordOutput("Shoot/Desired shooter volts", 0);
+
     s_outtake.setVoltage(0);
   }
 

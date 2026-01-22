@@ -6,21 +6,19 @@ package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Inches;
 import static frc.robot.commands.DriveCommands.joystickDriveAtAngle;
+import static frc.robot.subsystems.vision.VisionConstants.*;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ShootAlign extends Command {
   Drive s_drive;
-  public static AprilTagFieldLayout aprilTagLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
   /** Creates a new ShootAlign. */
   public ShootAlign(Drive s_drive) {
     // Use addRequirements() here to declare subsystem dependencies.
@@ -45,11 +43,12 @@ public class ShootAlign extends Command {
     }
     double deltaX = -(currPose.getX() - hubPose.getX());
     double deltaY = currPose.getY() - hubPose.getY();
-    Rotation2d desiredRot = new Rotation2d(Math.atan(deltaY / deltaX));
+    Rotation2d desiredRot = new Rotation2d(-Math.atan(deltaY / deltaX));
     // x and y suppliers to be changed for future
     DoubleSupplier xSupplier = () -> 0;
     DoubleSupplier ySupplier = () -> 0;
     Supplier<Rotation2d> omegaSupplier = () -> desiredRot;
+    Logger.recordOutput("DesiredRot", desiredRot.getDegrees());
     joystickDriveAtAngle(s_drive, null, null, omegaSupplier);
   }
 
