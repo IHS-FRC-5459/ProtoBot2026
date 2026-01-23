@@ -56,10 +56,17 @@ public final class Constants {
         };
   }
 
+  public static final String canbus = "rio";
+
   public static class Sensors {
     public static class Pigeon {
       public static final int id = 13;
-      public static final String canbus = "rio";
     }
+  }
+
+  public static class Motors {
+    public static final int intakeId = 15;
+    public static final int outtakeId = 14;
+    public static final int climbId = 17;
   }
 }

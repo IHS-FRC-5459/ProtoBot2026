@@ -31,37 +31,71 @@ public class CameraConstants {
 
   static {
     cameras.put(
-        "left",
+        "frontleft",
         new CameraConstants(
-            LeftCam.kCameraName,
-            LeftCam.kMultiTagStdDevs,
-            LeftCam.kRobotToCam,
-            LeftCam.kSingleTagStdDevs));
+            FrontLeftCam.kCameraName,
+            FrontLeftCam.kMultiTagStdDevs,
+            FrontLeftCam.kRobotToCam,
+            FrontLeftCam.kSingleTagStdDevs));
     cameras.put(
-        "right",
+        "frontright",
         new CameraConstants(
-            RightCam.kCameraName,
-            RightCam.kMultiTagStdDevs,
-            RightCam.kRobotToCam,
-            RightCam.kSingleTagStdDevs));
+            FrontRightCam.kCameraName,
+            FrontRightCam.kMultiTagStdDevs,
+            FrontRightCam.kRobotToCam,
+            FrontRightCam.kSingleTagStdDevs));
+    cameras.put(
+        "backleft",
+        new CameraConstants(
+            BackLeftCam.kCameraName,
+            BackLeftCam.kMultiTagStdDevs,
+            BackLeftCam.kRobotToCam,
+            BackLeftCam.kSingleTagStdDevs));
+    cameras.put(
+        "backright",
+        new CameraConstants(
+            BackRightCam.kCameraName,
+            BackRightCam.kMultiTagStdDevs,
+            BackRightCam.kRobotToCam,
+            BackRightCam.kSingleTagStdDevs));
   }
 
-  public static class LeftCam {
-    public static final String kCameraName = "left";
+  public static class FrontLeftCam {
+    public static final String kCameraName = "frontleft";
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
     public static final Transform3d kRobotToCam =
         new Transform3d(
-            new Translation3d(0.33655, 0.2587625, 0.2778125),
+            new Translation3d(0.27225625, 0.235, 0.259),
             new Rotation3d(0, Math.toRadians(5), Math.toRadians(-15)));
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
   }
 
-  public static class RightCam {
-    public static final String kCameraName = "right";
+  public static class FrontRightCam {
+    public static final String kCameraName = "frontright";
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
     public static final Transform3d kRobotToCam =
         new Transform3d(
-            new Translation3d(0.358775, -0.2682875, 0.27305),
+            new Translation3d(0.28654375, -0.222504, 0.257175),
+            new Rotation3d(0, Math.toRadians(5), Math.toRadians(15)));
+    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
+  }
+
+  public static class BackLeftCam {
+    public static final String kCameraName = "backleft";
+    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
+    public static final Transform3d kRobotToCam =
+        new Transform3d(
+            new Translation3d(-0.28813125, 0.23495, 0.273812),
+            new Rotation3d(0, Math.toRadians(5), Math.toRadians(15)));
+    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
+  }
+
+  public static class BackRightCam {
+    public static final String kCameraName = "backright";
+    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
+    public static final Transform3d kRobotToCam =
+        new Transform3d(
+            new Translation3d(-0.28829, -0.21351875, 0.2667),
             new Rotation3d(0, Math.toRadians(5), Math.toRadians(15)));
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
   }

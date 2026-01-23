@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import static frc.robot.Constants.*;
+
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -13,7 +15,7 @@ public class IntakeSub extends SubsystemBase {
   private SparkMax controller;
 
   public IntakeSub() {
-    controller = new SparkMax(15, MotorType.kBrushed);
+    controller = new SparkMax(Motors.intakeId, MotorType.kBrushed);
   }
 
   public void setVoltage(double volts) {

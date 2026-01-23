@@ -13,7 +13,7 @@
 
 package frc.robot;
 
-// import static frc.robot.subsystems.vision.VisionConstants.*;
+import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -27,12 +27,15 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.ClimbDown;
+import frc.robot.commands.ClimbUp;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.Intake;
 import frc.robot.commands.ReverseIntake;
 import frc.robot.commands.Shoot;
 import frc.robot.commands.ShootAlign;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.ClimbSub;
 import frc.robot.subsystems.IntakeSub;
 import frc.robot.subsystems.OuttakeSub;
 import frc.robot.subsystems.drive.Drive;
@@ -41,14 +44,12 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
-import frc.robot.subsystems.ourVision.Vision;
+// import frc.robot.subsystems.ourVision.Vision;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-
-// import frc.robot.subsystems.vision.Vision;
-// import frc.robot.subsystems.vision.VisionIO;
-// import frc.robot.subsystems.vision.VisionIOPhotonVision;
-// import frc.robot.subsystems.vision.VisionIOLimelight;
-// import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -61,6 +62,7 @@ public class RobotContainer {
   private final Drive drive;
   private IntakeSub intake_s;
   private OuttakeSub outtake_s;
+  private ClimbSub climb_s;
   // private final Vision vision;
   private Vision vision;
   // Sensors
@@ -83,15 +85,18 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
-        // vision =
-        //     new Vision(
-        //         drive::addVisionMeasurement,
-        //         new VisionIOPhotonVision(camera0Name, robotToCamera0),
-        //         new VisionIOPhotonVision(camera1Name, robotToCamera1));
-        pigeon = new Pigeon2(Constants.Sensors.Pigeon.id, Constants.Sensors.Pigeon.canbus);
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVision(camera0Name, robotToCamera0),
+                new VisionIOPhotonVision(camera1Name, robotToCamera1),
+                new VisionIOPhotonVision(camera2Name, robotToCamera2),
+                new VisionIOPhotonVision(camera3Name, robotToCamera3));
+        pigeon = new Pigeon2(Constants.Sensors.Pigeon.id, Constants.canbus);
         intake_s = new IntakeSub();
         outtake_s = new OuttakeSub();
-        vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
+        climb_s = new ClimbSub();
+        // vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
         break;
 
       case SIM:
@@ -103,17 +108,20 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.FrontRight),
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
-        // vision =
-        //     new Vision(
-        //         drive::addVisionMeasurement,
-        //         new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
-        //         new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
+                new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose),
+                new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
+                new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
 
-        pigeon = new Pigeon2(Constants.Sensors.Pigeon.id, Constants.Sensors.Pigeon.canbus);
+        pigeon = new Pigeon2(Constants.Sensors.Pigeon.id, Constants.canbus);
 
-        vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
+        // vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
         intake_s = new IntakeSub();
         outtake_s = new OuttakeSub();
+        climb_s = new ClimbSub();
 
         break;
 
@@ -126,11 +134,18 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        // vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
-        pigeon = new Pigeon2(Constants.Sensors.Pigeon.id, Constants.Sensors.Pigeon.canbus);
-        vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIO() {},
+                new VisionIO() {},
+                new VisionIO() {},
+                new VisionIO() {});
+        pigeon = new Pigeon2(Constants.Sensors.Pigeon.id, Constants.canbus);
+        // vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
         intake_s = new IntakeSub();
         outtake_s = new OuttakeSub();
+        climb_s = new ClimbSub();
 
         break;
     }
@@ -180,17 +195,17 @@ public class RobotContainer {
             () -> -controller.getRightX()));
 
     // Lock to 0° when A button is held
-    controller
-        .a()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> new Rotation2d()));
+    // controller
+    //     .a()
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtAngle(
+    //             drive,
+    //             () -> -controller.getLeftY(),
+    //             () -> -controller.getLeftX(),
+    //             () -> new Rotation2d()));
 
     // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     // Reset gyro to 0° when Y button is pressed
     controller
@@ -207,6 +222,8 @@ public class RobotContainer {
     controller.leftBumper().whileTrue(new ReverseIntake(intake_s));
     controller.rightTrigger(0.02).whileTrue(new Shoot(outtake_s, drive));
     controller.a().whileTrue(new ShootAlign(drive));
+    controller.b().whileTrue(new ClimbUp(climb_s));
+    controller.x().whileTrue(new ClimbDown(climb_s));
   }
 
   /**
