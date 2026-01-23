@@ -53,14 +53,16 @@ public class Shoot extends Command {
     if (currPose.getX() < aprilTagLayout.getFieldLength() / 2) { // Close side(blue)
       hubPose = new Pose2d(Inches.of(469.11), Inches.of(158.84), new Rotation2d(0));
     }
-    double deltaX = -(currPose.getX() - hubPose.getX());
+    double deltaX = currPose.getX() - hubPose.getX();
     double deltaY = currPose.getY() - hubPose.getY();
+    double deltaGround = (Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2)));
+    double deltaZ = 1.3716; // Hub is 6'6'', robot shooter is 1'6''
     double denominator =
-        2 * Math.pow((Math.cos(fixedAng)), 2) * (deltaX * Math.tan(fixedAng) - deltaY);
+        2 * Math.pow((Math.cos(fixedAng)), 2) * (deltaGround * Math.tan(fixedAng) - deltaZ);
     if (denominator <= 0) {
       return;
     }
-    double reqVelocity = Math.sqrt((g * Math.pow(deltaX, 2)) / denominator);
+    double reqVelocity = Math.sqrt((g * Math.pow(deltaGround, 2)) / denominator);
     Logger.recordOutput("Shoot/req velocity", reqVelocity);
 
     double reqVoltage = 4 * reqVelocity; // Very bad conversion, TODO: Change

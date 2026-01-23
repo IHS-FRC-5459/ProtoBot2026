@@ -151,7 +151,7 @@ public class Vision extends SubsystemBase {
             observation.pose().toPose2d(),
             observation.timestamp(),
             VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev)
-                .times(10)); // Added to make less jumpy
+                .times(1)); // Added to make less jumpy
       }
       // Log camera metadata
       Logger.recordOutput(

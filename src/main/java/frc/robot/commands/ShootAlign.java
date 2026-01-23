@@ -25,11 +25,14 @@ public class ShootAlign extends Command {
     // Note: I putpoosely didnt put dive in addRequirements because I dont want to lock out Rose
     // from driving translation-wise
     this.s_drive = s_drive;
+    System.out.println("Shoottttalign syart");
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    System.out.println("Shoot align start");
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
@@ -50,6 +53,7 @@ public class ShootAlign extends Command {
     Supplier<Rotation2d> omegaSupplier = () -> desiredRot;
     Logger.recordOutput("DesiredRot", desiredRot.getDegrees());
     joystickDriveAtAngle(s_drive, null, null, omegaSupplier);
+    System.out.println("Shoot aligning");
   }
 
   // Called once the command ends or is interrupted.
