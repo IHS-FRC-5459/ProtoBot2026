@@ -3,7 +3,8 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "New Folder"
+    "New Folder",
+    "Ben's Auto"
   ],
   "autoFolders": [],
   "defaultMaxVel": 3.0,

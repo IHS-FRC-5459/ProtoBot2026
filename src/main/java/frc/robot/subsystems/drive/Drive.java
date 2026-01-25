@@ -202,6 +202,7 @@ public class Drive extends SubsystemBase {
       if (gyroInputs.connected) {
         // Use the real gyro angle
         rawGyroRotation = gyroInputs.odometryYawPositions[i];
+        Logger.recordOutput("Raw gyro rotation: ", rawGyroRotation.getDegrees());
       } else {
         // Use the angle delta from the kinematics and module deltas
         Twist2d twist = kinematics.toTwist2d(moduleDeltas);
