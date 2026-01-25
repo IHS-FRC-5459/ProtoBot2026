@@ -57,8 +57,8 @@ public class VisionConstants {
   public static double[] cameraStdDevFactors =
       new double[] {
         40, // Camera 0
-        28, // Camera 1
-        47, // Camera 2
+        35, // Camera 1
+        52, // Camera 2
         40 // Camera 3
       };
 
