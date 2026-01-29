@@ -194,16 +194,6 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    // Lock to 0° when A button is held
-    // controller
-    //     .a()
-    //     .whileTrue(
-    //         DriveCommands.joystickDriveAtAngle(
-    //             drive,
-    //             () -> -controller.getLeftY(),
-    //             () -> -controller.getLeftX(),
-    //             () -> new Rotation2d()));
-
     // Switch to X pattern when X button is pressed
     // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
@@ -221,7 +211,10 @@ public class RobotContainer {
     controller.leftTrigger(0.02).whileTrue(new Intake(intake_s));
     controller.leftBumper().whileTrue(new ReverseIntake(intake_s));
     controller.rightTrigger(0.02).whileTrue(new Shoot(outtake_s, drive));
-    controller.a().whileTrue(new ShootAlign(drive));
+    controller
+        .a()
+        .whileTrue(
+            new ShootAlign(drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
     controller.b().whileTrue(new ClimbUp(climb_s));
     controller.x().whileTrue(new ClimbDown(climb_s));
   }

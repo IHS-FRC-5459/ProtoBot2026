@@ -5,7 +5,8 @@
 package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Inches;
-import static frc.robot.commands.DriveCommands.joystickDriveAtAngle;
+import static frc.robot.commands.DriveCommands.joystickDriveAtAngleCustom;
+import static frc.robot.commands.DriveCommands.setIsFirstCall;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -19,12 +20,15 @@ import org.littletonrobotics.junction.Logger;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ShootAlign extends Command {
   Drive s_drive;
+  DoubleSupplier xSupplier, ySupplier;
   /** Creates a new ShootAlign. */
-  public ShootAlign(Drive s_drive) {
+  public ShootAlign(Drive s_drive, DoubleSupplier controllerX, DoubleSupplier controllerY) {
     // Use addRequirements() here to declare subsystem dependencies.
     // Note: I putpoosely didnt put dive in addRequirements because I dont want to lock out Rose
     // from driving translation-wise
     this.s_drive = s_drive;
+    this.xSupplier = controllerX;
+    this.ySupplier = controllerY;
     System.out.println("Shoottttalign syart");
   }
 
@@ -32,27 +36,43 @@ public class ShootAlign extends Command {
   @Override
   public void initialize() {
     System.out.println("Shoot align start");
+    setIsFirstCall(true);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    // Note: Assumes CW is posotive andle, CCW is negative angle
+    // Note: Assumes CCW is posotive andle, CW is negative angle
     Pose2d currPose = s_drive.getPose();
-    // Far-side(red)
+    // Close-side(blue)
     Pose2d hubPose = new Pose2d(Inches.of(182.11), Inches.of(158.84), new Rotation2d(0));
-    if (currPose.getX() < aprilTagLayout.getFieldLength() / 2) { // Close side(blue)
+    if (currPose.getX() > aprilTagLayout.getFieldLength() / 2) { // Far-side(red)
       hubPose = new Pose2d(Inches.of(469.11), Inches.of(158.84), new Rotation2d(0));
+      System.out.println("Red side");
     }
-    double deltaX = -(currPose.getX() - hubPose.getX());
+    Logger.recordOutput("Hub pose", hubPose);
+    double deltaX = (currPose.getX() - hubPose.getX());
     double deltaY = currPose.getY() - hubPose.getY();
-    Rotation2d desiredRot = new Rotation2d(-Math.atan(deltaY / deltaX));
+    Logger.recordOutput("deltaX", deltaX);
+    Logger.recordOutput("deltaY", deltaY);
+    Rotation2d atanCalc = new Rotation2d(Math.atan(deltaY / deltaX));
+    Logger.recordOutput("athancalc", atanCalc.getDegrees());
+    // in radians
+    double desiredRot = atanCalc.getRadians(); // - currPose.getRotation().getRadians();
+    Logger.recordOutput("before changing desired rot ", 180 * desiredRot / Math.PI);
+    if (desiredRot < -Math.PI) {
+      desiredRot = 2 * Math.PI + desiredRot;
+    }
+    if (desiredRot > Math.PI) {
+      desiredRot = -(2 * Math.PI - desiredRot);
+    }
+    double passingOmega = desiredRot;
     // x and y suppliers to be changed for future
-    DoubleSupplier xSupplier = () -> 0;
-    DoubleSupplier ySupplier = () -> 0;
-    Supplier<Rotation2d> omegaSupplier = () -> desiredRot;
-    Logger.recordOutput("DesiredRot", desiredRot.getDegrees());
-    joystickDriveAtAngle(s_drive, null, null, omegaSupplier);
+    // Rotation2d desiredRot = new Rotation2d(Degrees.of(15));
+    Supplier<Rotation2d> omegaSupplier = () -> new Rotation2d(passingOmega); // desiredRot;
+    // DoubleSupplier omegaSupplier = () -> desiredRot.getRadians();
+    Logger.recordOutput("DesiredRot", 180 * desiredRot / Math.PI);
+    joystickDriveAtAngleCustom(s_drive, xSupplier, ySupplier, omegaSupplier);
     System.out.println("Shoot aligning");
   }
 
