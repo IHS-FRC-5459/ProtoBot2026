@@ -18,6 +18,7 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.playingwithfusion.TimeOfFlight;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -28,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.ClimbDown;
+import frc.robot.commands.ClimbRight;
 import frc.robot.commands.ClimbUp;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.Intake;
@@ -67,7 +69,9 @@ public class RobotContainer {
   private Vision vision;
   // Sensors
   private Pigeon2 pigeon;
-  // Controller
+  private final TimeOfFlight leftRangeSensor;
+  private final TimeOfFlight rightRangeSensor;
+  // controller
   private final CommandXboxController controller = new CommandXboxController(0);
 
   // Dashboard inputs
@@ -96,6 +100,8 @@ public class RobotContainer {
         intake_s = new IntakeSub();
         outtake_s = new OuttakeSub();
         climb_s = new ClimbSub();
+        leftRangeSensor = new TimeOfFlight(Constants.Sensors.Distance.leftId);
+        rightRangeSensor = new TimeOfFlight(Constants.Sensors.Distance.rightId);
         // vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
         break;
 
@@ -122,6 +128,8 @@ public class RobotContainer {
         intake_s = new IntakeSub();
         outtake_s = new OuttakeSub();
         climb_s = new ClimbSub();
+        leftRangeSensor = new TimeOfFlight(Constants.Sensors.Distance.leftId);
+        rightRangeSensor = new TimeOfFlight(Constants.Sensors.Distance.rightId);
 
         break;
 
@@ -146,6 +154,8 @@ public class RobotContainer {
         intake_s = new IntakeSub();
         outtake_s = new OuttakeSub();
         climb_s = new ClimbSub();
+        leftRangeSensor = new TimeOfFlight(Constants.Sensors.Distance.leftId);
+        rightRangeSensor = new TimeOfFlight(Constants.Sensors.Distance.rightId);
 
         break;
     }
@@ -217,6 +227,7 @@ public class RobotContainer {
             new ShootAlign(drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
     controller.b().whileTrue(new ClimbUp(climb_s));
     controller.x().whileTrue(new ClimbDown(climb_s));
+    controller.rightBumper().whileTrue(new ClimbRight(drive, leftRangeSensor, rightRangeSensor));
   }
 
   /**

@@ -62,6 +62,11 @@ public final class Constants {
     public static class Pigeon {
       public static final int id = 13;
     }
+
+    public static class Distance {
+      public static final int leftId = 20;
+      public static final int rightId = 21;
+    }
   }
 
   public static class Motors {
