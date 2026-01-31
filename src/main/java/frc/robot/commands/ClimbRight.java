@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ClimbRight extends Command {
@@ -37,13 +38,20 @@ public class ClimbRight extends Command {
   @Override
   public void initialize() {
     setIsFirstCall(true);
+    omegaPassed1 = false;
+    xPassed = false;
+    yPassed = false;
+    isDone = false;
+    doneAligningToStart = false;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   private boolean isDone = false;
+  private boolean omegaPassed1, xPassed, yPassed = false;
 
   @Override
   public void execute() {
+    Logger.recordOutput("climb/First step done", doneAligningToStart);
     DoubleSupplier xSupplier, ySupplier;
     Supplier<Rotation2d> omegaSupplier;
     // Note these climb poses are not the poses of the actual climb structure, but the spot where we
@@ -53,8 +61,8 @@ public class ClimbRight extends Command {
     Rotation2d blueClimbRot = new Rotation2d(Math.PI); // Facing the alliance wall
     Rotation2d redClimbRot = new Rotation2d(0);
     // Note, these give a 2ft buffer dtstance
-    Pose2d blueClimb = new Pose2d(Inches.of(41.56), Inches.of(35.845), blueClimbRot);
-    Pose2d redClimb = new Pose2d(Inches.of(582.22), Inches.of(143.535), redClimbRot);
+    Pose2d blueClimb = new Pose2d(Inches.of(41.56), Inches.of(35.845 + 13.5 + 48), blueClimbRot);
+    Pose2d redClimb = new Pose2d(Inches.of(582.22), Inches.of(143.535 - 13.5 - 48), redClimbRot);
     // These are the y-coordinates of when we can then enable our climbing mechnism
     // 0.584 = 23 in in m. Give ourselves 1 inh away from the climb strut
     double blueTerminate = blueClimb.getY() + 0.584;
@@ -66,35 +74,49 @@ public class ClimbRight extends Command {
       climbPose = redClimb;
       isBlueAlliance = false;
     }
+    Logger.recordOutput("climb/climbPose", climbPose);
     // Get to approximate starting location. Note that we don't use vision for yaw align(instead use
     // distance sensors)
     if (!doneAligningToStart) {
       // distances in meters
-      double deltaX = currPose.getX() - climbPose.getX();
-      double deltaY = currPose.getX() - climbPose.getX();
-
+      double deltaX = -(currPose.getX() - climbPose.getX());
+      double deltaY = -(currPose.getY() - climbPose.getY());
+      if (xPassed) {
+        deltaX = 0;
+      }
+      if (yPassed) {
+        deltaY = 0;
+      }
+      double x = deltaX;
+      double y = deltaY;
       // Angle calculations(in radians) (use vision pose)
+      Rotation2d omega = new Rotation2d(climbPose.getRotation().getRadians());
       Rotation2d deltaOmega =
           new Rotation2d(
               currPose.getRotation().getRadians() - climbPose.getRotation().getRadians());
-      xSupplier = () -> deltaX;
-      ySupplier = () -> deltaY;
-      omegaSupplier =
-          () ->
-              new Rotation2d(
-                  deltaOmega.getRadians()
-                      / 10); // Once again, VERY subject to change, but likely will be a linear
+      xSupplier = () -> x;
+      ySupplier = () -> y; // deltaY / 10;
+      omegaSupplier = () -> omega;
+      // new Rotation2d(
+      //     deltaOmega.getRadians()
+      //         / 10); // Once again, VERY subject to change, but likely will be a linear
       // transofrmation for our purposes to keep things simple
+
+      xPassed = Math.abs(deltaX) < 0.2 || xPassed;
+      yPassed = Math.abs(deltaY) < 0.0508 || yPassed;
+      omegaPassed1 = Math.abs(deltaOmega.getDegrees()) < 10 || omegaPassed1;
+      Logger.recordOutput("climb/X passed check", xPassed);
+      Logger.recordOutput("climb/Y check passed", yPassed);
+      Logger.recordOutput("climb/omega test passed", omegaPassed1);
+      Logger.recordOutput("climb/deltaX", deltaX);
+      Logger.recordOutput("climb/deltaY", deltaY);
       // 0.0508 = 2 in in
-      doneAligningToStart =
-          Math.abs(deltaX) < 0.0508
-              && Math.abs(deltaY) < 0.0508
-              && Math.abs(deltaOmega.getDegrees()) < 5;
+      doneAligningToStart = xPassed && yPassed && omegaPassed1;
     } else if ((isBlueAlliance && currPose.getY() >= blueTerminate)
         || (!isBlueAlliance && currPose.getY() <= redTerminate)) {
       // Go towards climb, staying straight by distance sensors
-      ySupplier = () -> 0;
-      xSupplier = () -> 0.01; // constant, we want to go slow, no pid controller
+      ySupplier = () -> -0.01;
+      xSupplier = () -> 0; // constant, we want to go slow, no pid controller
       double distanceDeadspace = 10; // Distance deadspace of distance sensors
       double distanceOmega = leftDistSensor.getRange() - rightDistSensor.getRange();
       double omegaPassing = 0; // in radians
@@ -111,7 +133,7 @@ public class ClimbRight extends Command {
       omegaSupplier = () -> new Rotation2d();
       isDone = true;
     }
-    joystickDriveAtAngleCustom(s_drive, xSupplier, ySupplier, omegaSupplier);
+    joystickDriveAtAngleCustom(s_drive, xSupplier, ySupplier, omegaSupplier, omegaPassed1);
   }
 
   // Called once the command ends or is interrupted.
