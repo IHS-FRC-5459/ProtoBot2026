@@ -39,7 +39,7 @@ public class DistanceCaching extends SubsystemBase {
     return 0;
   }
 
-  private double getLeft() {
+  public double getLeft() {
     double total = 0;
     int numZeroes = 0;
     for (double d : leftQ) {
@@ -51,10 +51,13 @@ public class DistanceCaching extends SubsystemBase {
         badLeftNum = 0;
       }
     }
+    if (total == 0) {
+      return -1;
+    }
     return total / (leftQ.size() - numZeroes);
   }
 
-  private double getRight() {
+  public double getRight() {
     double total = 0;
     int numZeroes = 0;
     for (double d : rightQ) {
@@ -66,7 +69,22 @@ public class DistanceCaching extends SubsystemBase {
         badRightNum = 0;
       }
     }
-    return (total / rightQ.size() - numZeroes);
+    if (total == 0) {
+      return -1;
+    }
+    return total / (rightQ.size() - numZeroes);
+  }
+
+  public boolean leftValid() {
+    return getLeft() != -1;
+  }
+
+  public boolean rightValid() {
+    return getRight() != -1;
+  }
+
+  public boolean bothValid() {
+    return leftValid() && rightValid();
   }
 
   @Override
