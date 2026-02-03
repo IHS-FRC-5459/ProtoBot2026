@@ -72,7 +72,6 @@ public class DriveCommands {
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
-    System.out.println("HIIIIIIIIII");
     return Commands.run(
         () -> {
           // Get linear velocity

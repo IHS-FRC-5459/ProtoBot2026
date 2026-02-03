@@ -11,6 +11,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 
 public class VisionConstants {
   // AprilTag layout
@@ -27,22 +28,20 @@ public class VisionConstants {
   // (Not used by Limelight, configure in web UI instead)
   public static Transform3d robotToCamera0 =
       new Transform3d(
-          0.2825, 0.2286, 0.288925, new Rotation3d(0, Math.toRadians(-30), Math.toRadians(-45)));
+          new Translation3d(0.2794, 0.2286, 0.282575),
+          new Rotation3d(0, Math.toRadians(-30), Math.toRadians(-35)));
   public static Transform3d robotToCamera1 =
       new Transform3d(
-          0.288925, -0.2286, 0.288925, new Rotation3d(0, Math.toRadians(-30), Math.toRadians(15)));
+          new Translation3d(0.276225, -0.2286, 0.282575),
+          new Rotation3d(0, Math.toRadians(-30), Math.toRadians(15))); // 15
   public static Transform3d robotToCamera2 =
       new Transform3d(
-          0.0254,
-          0.136525,
-          0.523875,
-          new Rotation3d(0, Math.toRadians(5), Math.toRadians(180))); // -1 * ( 90+67
+          new Translation3d(0, 0.2413, 0.50165),
+          new Rotation3d(0, Math.toRadians(-5), Math.toRadians(180)));
   public static Transform3d robotToCamera3 =
       new Transform3d(
-          0.028575,
-          -0.1397,
-          0.523875,
-          new Rotation3d(0, Math.toRadians(5), Math.toRadians(180))); // -1 * (-90-45
+          new Translation3d(0, -0.2413, 0.50165),
+          new Rotation3d(0, Math.toRadians(-5), Math.toRadians(180)));
   // Basic filtering thresholds
   public static double maxAmbiguity = 0.3;
   public static double maxZError = 0.75;

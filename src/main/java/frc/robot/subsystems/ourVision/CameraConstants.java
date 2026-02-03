@@ -65,8 +65,8 @@ public class CameraConstants {
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
     public static final Transform3d kRobotToCam =
         new Transform3d(
-            new Translation3d(0.27225625, 0.235, 0.259),
-            new Rotation3d(0, Math.toRadians(5), Math.toRadians(-15)));
+            new Translation3d(0.2794, 0.2286, 0.282575),
+            new Rotation3d(0, Math.toRadians(30), Math.toRadians(-35)));
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
   }
 
@@ -75,8 +75,8 @@ public class CameraConstants {
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
     public static final Transform3d kRobotToCam =
         new Transform3d(
-            new Translation3d(0.28654375, -0.222504, 0.257175),
-            new Rotation3d(0, Math.toRadians(5), Math.toRadians(15)));
+            new Translation3d(0.276225, -0.2286, 0.282575),
+            new Rotation3d(0, Math.toRadians(30), Math.toRadians(15)));
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
   }
 
@@ -85,8 +85,8 @@ public class CameraConstants {
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
     public static final Transform3d kRobotToCam =
         new Transform3d(
-            new Translation3d(-0.28813125, 0.23495, 0.273812),
-            new Rotation3d(0, Math.toRadians(5), Math.toRadians(15)));
+            new Translation3d(0, 0.2413, 0.50165),
+            new Rotation3d(0, Math.toRadians(5), Math.toRadians(180)));
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
   }
 
@@ -95,8 +95,8 @@ public class CameraConstants {
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
     public static final Transform3d kRobotToCam =
         new Transform3d(
-            new Translation3d(-0.28829, -0.21351875, 0.2667),
-            new Rotation3d(0, Math.toRadians(5), Math.toRadians(15)));
+            new Translation3d(0, -0.2413, 0.50165),
+            new Rotation3d(0, Math.toRadians(5), Math.toRadians(180)));
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
   }
 }

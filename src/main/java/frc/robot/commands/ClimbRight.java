@@ -74,13 +74,13 @@ public class ClimbRight extends Command {
     // X
     int numValid = 0; // Purposely doesnt use distCache to avoid runtime changes
     double yDist = 0;
-    double theta = 0;
+    // double theta = 0;
     if (distCache.bothValid()) {
       double right = distCache.getRight();
       double left = distCache.getLeft();
       if (right == left) {
         yDist = left;
-        theta = 0;
+        // theta = 0;
       } else {
         double beta = Math.atan(Math.abs(right - left) / camDist);
         double alpha = Math.PI / 2 - beta;
@@ -88,10 +88,10 @@ public class ClimbRight extends Command {
         yDist =
             Math.sin(beta) * (Math.max(left, right) + (robotWidth / 2) + x)
                 - Math.sqrt(((camDist / 2) * (camDist / 2) + Math.pow(x, 2)));
-        theta = Math.acos(yDist / (((left + right) / 2) + (robotWidth / 2)));
-        if (right > left) {
-          theta *= -1;
-        }
+        /// theta = Math.acos(yDist / (((left + right) / 2) + (robotWidth / 2)));
+        // if (right > left) {
+        // theta *= -1;
+        // }
       }
       numValid = 2;
     } else {
@@ -110,15 +110,16 @@ public class ClimbRight extends Command {
     if (numValid == 2) {
       double y = yDist * directionMult;
       xSupplier = () -> y;
-      double t = theta;
-      if (!isBlueAlliance) {
-        t += Math.PI;
-      }
-      if (t > Math.PI) {
-        t = -(2 * (Math.PI) - t);
-      }
-      double o = t;
-      omegaSupplier = () -> new Rotation2d(o);
+      // double t = theta;
+      // if (!isBlueAlliance) {
+      // t += Math.PI;
+      // }
+      // if (t > Math.PI) {
+      // t = -(2 * (Math.PI) - t);
+      // }
+      // double o = t;
+      double rot = climbPose.getRotation().getRadians();
+      omegaSupplier = () -> new Rotation2d(rot);
       omegaPassed = true;
     } else if (numValid == 1) {
       double y = yDist * directionMult;

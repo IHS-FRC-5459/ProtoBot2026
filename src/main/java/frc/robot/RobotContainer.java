@@ -27,11 +27,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.ClimbDown;
-import frc.robot.commands.ClimbRight;
-import frc.robot.commands.ClimbUp;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.ShootAlign;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.ClimbSub;
 import frc.robot.subsystems.DistanceCaching;
@@ -213,13 +209,13 @@ public class RobotContainer {
     // controller.leftTrigger(0.02).whileTrue(new Intake(intake_s));
     // controller.leftBumper().whileTrue(new ReverseIntake(intake_s));
     // controller.rightTrigger(0.02).whileTrue(new Shoot(outtake_s, drive));
-    controller
-        .a()
-        .whileTrue(
-            new ShootAlign(drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
-    controller.b().whileTrue(new ClimbUp(climb_s));
-    controller.x().whileTrue(new ClimbDown(climb_s));
-    controller.rightBumper().whileTrue(new ClimbRight(drive, distanceCache));
+    // controller
+    //     .a()
+    //     .whileTrue(
+    //         new ShootAlign(drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
+    // controller.b().whileTrue(new ClimbUp(climb_s));
+    // controller.x().whileTrue(new ClimbDown(climb_s));
+    // controller.rightBumper().whileTrue(new ClimbRight(drive, distanceCache));
   }
 
   /**
