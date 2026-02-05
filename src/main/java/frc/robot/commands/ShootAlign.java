@@ -48,7 +48,6 @@ public class ShootAlign extends Command {
     Pose2d hubPose = new Pose2d(Inches.of(182.11), Inches.of(158.84), new Rotation2d(0));
     if (currPose.getX() > aprilTagLayout.getFieldLength() / 2) { // Far-side(red)
       hubPose = new Pose2d(Inches.of(469.11), Inches.of(158.84), new Rotation2d(0));
-      System.out.println("Red side");
     }
     Logger.recordOutput("Hub pose", hubPose);
     double deltaX = (currPose.getX() - hubPose.getX());

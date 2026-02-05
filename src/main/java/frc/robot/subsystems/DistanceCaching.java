@@ -17,7 +17,7 @@ public class DistanceCaching extends SubsystemBase {
   Queue<Double> rightQ = new LinkedList<>();
   int badLeftNum = 0;
   int badRightNum = 0;
-  private final int queueSize = 10;
+  private final int queueSize = 18;
   private final int maxBadMeasurements = 20;
   /** Creates a new DistanceCaching. */
   public DistanceCaching() {
@@ -54,7 +54,7 @@ public class DistanceCaching extends SubsystemBase {
     if (total == 0) {
       return -1;
     }
-    return total / (leftQ.size() - numZeroes);
+    return (total / (leftQ.size() - numZeroes)) / 1000;
   }
 
   public double getRight() {
@@ -72,7 +72,7 @@ public class DistanceCaching extends SubsystemBase {
     if (total == 0) {
       return -1;
     }
-    return total / (rightQ.size() - numZeroes);
+    return (total / (rightQ.size() - numZeroes)) / 1000;
   }
 
   public boolean leftValid() {

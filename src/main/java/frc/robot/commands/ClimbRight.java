@@ -34,9 +34,11 @@ public class ClimbRight extends Command {
 
   // Called when the command is initially scheduled.
   // private boolean doneAligningToStart = false;
+  int time = 0;
 
   @Override
   public void initialize() {
+    time = 0;
     setIsFirstCall(true);
     // omegaPassed1 = false;
     // yPassed = false;
@@ -51,6 +53,7 @@ public class ClimbRight extends Command {
 
   @Override
   public void execute() {
+    time++;
     Pose2d currPose = s_drive.getPose();
     // want to go to to make sure we are going in with good alignment
     // Blue alliance
@@ -76,18 +79,26 @@ public class ClimbRight extends Command {
     double yDist = 0;
     // double theta = 0;
     if (distCache.bothValid()) {
+      // Logger.recordOutput("bothValid", true);
       double right = distCache.getRight();
       double left = distCache.getLeft();
       if (right == left) {
         yDist = left;
         // theta = 0;
       } else {
-        double beta = Math.atan(Math.abs(right - left) / camDist);
+        double beta = Math.atan(sensorDist / Math.abs(right - left));
+        Logger.recordOutput("math/beta", beta);
         double alpha = Math.PI / 2 - beta;
-        double x = (100 / (Math.tan(alpha)));
+        Logger.recordOutput("math/alpha", alpha);
+        double x = ((sensorDist / 2) / (Math.tan(alpha)));
+        Logger.recordOutput("math/x", x);
         yDist =
             Math.sin(beta) * (Math.max(left, right) + (robotWidth / 2) + x)
-                - Math.sqrt(((camDist / 2) * (camDist / 2) + Math.pow(x, 2)));
+                - Math.sqrt(((sensorDist / 2) * (sensorDist / 2) + Math.pow(x, 2)));
+        Logger.recordOutput(
+            "math/correction", Math.sqrt((Math.pow((sensorDist / 2), 2) + Math.pow(x, 2))));
+        Logger.recordOutput(
+            "math/y", Math.sin(beta) * (Math.max(left, right) + (robotWidth / 2) + x));
         /// theta = Math.acos(yDist / (((left + right) / 2) + (robotWidth / 2)));
         // if (right > left) {
         // theta *= -1;
@@ -107,8 +118,10 @@ public class ClimbRight extends Command {
     }
     DoubleSupplier xSupplier;
     Supplier<Rotation2d> omegaSupplier;
+    yDist -= .127; //5in
     if (numValid == 2) {
-      double y = yDist * directionMult;
+      double y = (yDist - climbPose.getX()) * directionMult;
+      Logger.recordOutput("math/diff", y);
       xSupplier = () -> y;
       // double t = theta;
       // if (!isBlueAlliance) {
@@ -118,24 +131,28 @@ public class ClimbRight extends Command {
       // t = -(2 * (Math.PI) - t);
       // }
       // double o = t;
-      double rot = climbPose.getRotation().getRadians();
-      omegaSupplier = () -> new Rotation2d(rot);
-      omegaPassed = true;
+      Logger.recordOutput("yDist", yDist);
     } else if (numValid == 1) {
-      double y = yDist * directionMult;
+      double y = (yDist - climbPose.getX()) * directionMult;
+      Logger.recordOutput("math/diff", y);
+
       xSupplier = () -> y;
-      omegaSupplier = () -> new Rotation2d();
-      omegaPassed = false;
     } else {
-      omegaPassed = false;
-      omegaSupplier = () -> new Rotation2d();
       xSupplier = () -> 0;
     }
+    double rot = climbPose.getRotation().getRadians();
+    omegaSupplier = () -> new Rotation2d(rot);
+    omegaPassed = true;
     // Works for both alliances
     // Y
-    DoubleSupplier ySupplier = () -> -0.1;
-
-    joystickDriveAtAngleCustom(s_drive, xSupplier, ySupplier, omegaSupplier, omegaPassed);
+    double d = directionMult;
+    double deltaY =
+        currPose.getY() - (climbPose.getY() + .61 * -1 * directionMult); // .4064=16in to m
+    // TODO: When we change this to ClimbLeft, we will need to cange that to .4064 * directionMult
+    DoubleSupplier ySupplier = () -> -deltaY;
+    omegaPassed = time < 100; // bad practice, but its fine :)
+    Logger.recordOutput("time", time);
+    joystickDriveAtAngleCustom(s_drive, xSupplier, ySupplier, omegaSupplier, !omegaPassed);
   }
   /*
   * Logger.recordOutput("climb/Done Aligning To Start", doneAligningToStart);

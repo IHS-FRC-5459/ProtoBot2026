@@ -31,7 +31,6 @@ public class Vision extends SubsystemBase {
     for (int i = 0; i < camerasList.size(); i++) {
       cameras[i] = camerasList.get(i);
     }
-
     this.pigeon = pigeon;
     this.drive = drive;
   }
