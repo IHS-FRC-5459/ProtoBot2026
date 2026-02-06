@@ -10,6 +10,7 @@ import static frc.robot.commands.DriveCommands.joystickDriveAtAngleCustom;
 import static frc.robot.commands.DriveCommands.setIsFirstCall;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -20,12 +21,12 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class ClimbRight extends Command {
+public class ClimbLeft extends Command {
   DistanceCaching distCache;
   Drive s_drive;
   /** Creates a new Climb. */
   // Climbs the right side of the climb structure(from the perspective of the alliance station)
-  public ClimbRight(Drive s_drive, DistanceCaching distCache) {
+  public ClimbLeft(Drive s_drive, DistanceCaching distCache) {
     // Use addRequirements() here to declare subsystem dependencies.
     // addRequirements(s_drive);
     this.s_drive = s_drive;
@@ -57,11 +58,13 @@ public class ClimbRight extends Command {
     Pose2d currPose = s_drive.getPose();
     // want to go to to make sure we are going in with good alignment
     // Blue alliance
-    Rotation2d blueClimbRot = new Rotation2d(Math.PI); // Facing the alliance wall
-    Rotation2d redClimbRot = new Rotation2d(0);
+    Rotation2d blueClimbRot = new Rotation2d(0); // Facing the alliance wall
+    Rotation2d redClimbRot = new Rotation2d(Math.PI);
     // Note, these give a 2ft buffer dtstance
-    Pose2d blueClimb = new Pose2d(Inches.of(41.56), Inches.of(35.845 + 13.5 + 48), blueClimbRot);
-    Pose2d redClimb = new Pose2d(Inches.of(582.22), Inches.of(143.535 - 13.5 - 48), redClimbRot);
+    Pose2d blueClimb =
+        new Pose2d(Inches.of(41.56100), Inches.of(35.845 + 13.5 + 48 + 125), blueClimbRot);
+    Pose2d redClimb =
+        new Pose2d(Inches.of(582.22), Inches.of(143.535 - 13.5 - 48 - 100), redClimbRot);
     boolean isBlueAlliance = true;
     boolean omegaPassed = false;
     double directionMult = 1;
@@ -118,11 +121,11 @@ public class ClimbRight extends Command {
     }
     DoubleSupplier xSupplier;
     Supplier<Rotation2d> omegaSupplier;
-    yDist -= .127; // 5in
+    yDist += .16;
     if (numValid == 2) {
       double y = (yDist - climbPose.getX()) * directionMult;
       Logger.recordOutput("math/diff", y);
-      xSupplier = () -> y;
+      xSupplier = () -> MathUtil.clamp(y, -1, 1);
       // double t = theta;
       // if (!isBlueAlliance) {
       // t += Math.PI;
@@ -136,7 +139,7 @@ public class ClimbRight extends Command {
       double y = (yDist - climbPose.getX()) * directionMult;
       Logger.recordOutput("math/diff", y);
 
-      xSupplier = () -> y;
+      xSupplier = () -> MathUtil.clamp(y, -1, 1);
     } else {
       xSupplier = () -> 0;
     }
@@ -146,10 +149,8 @@ public class ClimbRight extends Command {
     // Works for both alliances
     // Y
     double d = directionMult;
-    double deltaY =
-        currPose.getY() - (climbPose.getY() + .61 * -1 * directionMult); // .4064=16in to m
-    // TODO: When we change this to ClimbLeft, we will need to cange that to .4064 * directionMult
-    DoubleSupplier ySupplier = () -> -deltaY;
+    double deltaY = currPose.getY() - (climbPose.getY() + .61 * directionMult); // .4064=16in to m
+    DoubleSupplier ySupplier = () -> MathUtil.clamp(-deltaY, -1, 1);
     omegaPassed = time < 100; // bad practice, but its fine :)
     Logger.recordOutput("time", time);
     joystickDriveAtAngleCustom(s_drive, xSupplier, ySupplier, omegaSupplier, !omegaPassed);

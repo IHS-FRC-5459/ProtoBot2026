@@ -6,7 +6,6 @@ package frc.robot.subsystems;
 
 import com.playingwithfusion.TimeOfFlight;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import java.util.LinkedList;
 import java.util.Queue;
 import org.littletonrobotics.junction.Logger;
@@ -19,10 +18,13 @@ public class DistanceCaching extends SubsystemBase {
   int badRightNum = 0;
   private final int queueSize = 18;
   private final int maxBadMeasurements = 20;
+  int leftId, rightId;
   /** Creates a new DistanceCaching. */
-  public DistanceCaching() {
-    left = new TimeOfFlight(Constants.Sensors.Distance.leftId);
-    right = new TimeOfFlight(Constants.Sensors.Distance.rightId);
+  public DistanceCaching(int leftId, int rightId) {
+    left = new TimeOfFlight(leftId);
+    right = new TimeOfFlight(rightId);
+    this.leftId = leftId;
+    this.rightId = rightId;
   }
 
   public double getResult() {
@@ -98,8 +100,8 @@ public class DistanceCaching extends SubsystemBase {
     if (rightQ.size() > queueSize) {
       rightQ.remove();
     }
-    Logger.recordOutput("distance/left", getLeft());
-    Logger.recordOutput("distance/right", getRight());
-    Logger.recordOutput("distance/avg", getResult());
+    Logger.recordOutput("distance/left" + leftId, getLeft());
+    Logger.recordOutput("distance/right" + rightId, getRight());
+    Logger.recordOutput("distance/avg" + leftId, getResult());
   }
 }

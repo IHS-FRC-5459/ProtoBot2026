@@ -66,7 +66,9 @@ public final class Constants {
     public static class Distance {
       public static final int leftId = 20;
       public static final int rightId = 21;
-      public static final double sensorDist = 0.4556; // 14 in in m
+      public static final int backLeftId = 22;
+      public static final int backRightId = 23; // .4556 for camDist
+      public static final double sensorDist = 0.508; // 14 in in m
       public static final double robotWidth = 0.6858; // 27 in in m
     }
   }
