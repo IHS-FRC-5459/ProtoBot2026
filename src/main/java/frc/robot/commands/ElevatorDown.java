@@ -5,32 +5,42 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.IntakeSub;
+import frc.robot.subsystems.Climb;
+import frc.robot.subsystems.LED;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class Intake extends Command {
-  private IntakeSub intake_s;
-  /** Creates a new Intake. */
-  public Intake(IntakeSub intake_s) {
+public class ElevatorDown extends Command {
+  Climb s_climb;
+  LED s_led;
+  private final double goalTop = 10;
+  private final double grabVolts = 1;
+  private final double grabHoldVolts = 0.2;
+  /** Creates a new ClimbUp. */
+  public ElevatorDown(LED s_led, Climb s_climb) {
+    addRequirements(s_climb);
+    this.s_climb = s_climb;
+    this.s_led = s_led;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(intake_s);
-    this.intake_s = intake_s;
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    s_climb.setGoal(goalTop);
+    s_led.setElevatorGoingDown(true);
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    intake_s.setVoltage(4);
+    s_climb.setGrab(grabVolts);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    intake_s.setVoltage(0);
+    s_climb.setGrab(grabHoldVolts);
+    s_led.setElevatorGoingDown(false);
   }
 
   // Returns true when the command should end.

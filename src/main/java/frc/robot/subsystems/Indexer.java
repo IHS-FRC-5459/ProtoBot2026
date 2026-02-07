@@ -6,24 +6,23 @@ package frc.robot.subsystems;
 
 import static frc.robot.Constants.*;
 
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
+import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.Motors;
 
-public class OuttakeSub extends SubsystemBase {
-  /** Creates a new Intake. */
-  private SparkMax controller;
+public class Indexer extends SubsystemBase {
+  private TalonFX motor;
 
-  public OuttakeSub() {
-    controller = new SparkMax(Motors.outtakeId, MotorType.kBrushed);
+  public Indexer() {
+    motor = new TalonFX(Motors.indexId, canbus);
   }
 
   public void setVoltage(double volts) {
-    controller.setVoltage(-volts);
+    motor.setVoltage(-volts);
   }
 
   public double getVoltage() {
-    return -controller.get();
+    return -motor.get();
   }
 
   @Override

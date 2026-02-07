@@ -9,19 +9,20 @@ import static frc.robot.Constants.*;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class ClimbSub extends SubsystemBase {
+public class Flywheel extends SubsystemBase {
   TalonFX motor;
-  /** Creates a new Climb. */
-  public ClimbSub() {
-    motor = new TalonFX(Motors.climbId, canbus);
+  private double goal;
+  /** Creates a new Flywheel. */
+  public Flywheel() {
+    motor = new TalonFX(Motors.flywheelId, canbus);
   }
 
-  public void setPower(double power) {
-    motor.set(-power);
+  public void setGoal(double goal) {
+    this.goal = goal;
   }
 
-  public double getPower() {
-    return -motor.get();
+  public double getGoal() {
+    return this.goal;
   }
 
   @Override

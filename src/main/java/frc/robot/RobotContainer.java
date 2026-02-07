@@ -15,29 +15,38 @@ package frc.robot;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
+import com.ctre.phoenix6.hardware.CANdle;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.ClimbDown;
-// import frc.robot.commands.ClimbRight;
 import frc.robot.commands.ClimbRight;
-import frc.robot.commands.ClimbUp;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.ElevatorDown;
+import frc.robot.commands.ElevatorUp;
+import frc.robot.commands.FlywheelSpinUp;
+import frc.robot.commands.PassAlign;
+import frc.robot.commands.PassShoot;
+import frc.robot.commands.RunIntake;
+import frc.robot.commands.Shoot;
+// import frc.robot.commands.ClimbRight;
 import frc.robot.commands.ShootAlign;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.ClimbSub;
+import frc.robot.subsystems.Belt;
+import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.DistanceCaching;
-import frc.robot.subsystems.IntakeSub;
-import frc.robot.subsystems.OuttakeSub;
+import frc.robot.subsystems.DistanceSide;
+import frc.robot.subsystems.Flywheel;
+import frc.robot.subsystems.Hood;
+import frc.robot.subsystems.Indexer;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.LED;
+import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -60,19 +69,25 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private IntakeSub intake_s;
-  private OuttakeSub outtake_s;
-  private ClimbSub climb_s;
-  // private final Vision vision;
+  private Intake s_intake;
+  public Climb s_climb;
+  public Pivot s_pivot; // On purpose so that we can go down at start of match/auto
+  private Indexer s_indexer;
+  private Flywheel s_flywheel;
+  private Belt s_belt;
+  private Hood s_hood;
+  private LED s_led;
+  // private final Vision vision
   private Vision vision;
   // Sensors
   private Pigeon2 pigeon;
   private final DistanceCaching distanceCacheFront;
   private final DistanceCaching distanceCacheBack;
-
+  private final DistanceSide distanceSide;
+  private CANdle candle;
   // controller
-  private final CommandXboxController controller = new CommandXboxController(0);
-
+  private final CommandXboxController driver = new CommandXboxController(0);
+  private final CommandXboxController operator = new CommandXboxController(1);
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -95,10 +110,17 @@ public class RobotContainer {
                 new VisionIOPhotonVision(camera1Name, robotToCamera1),
                 new VisionIOPhotonVision(camera2Name, robotToCamera2),
                 new VisionIOPhotonVision(camera3Name, robotToCamera3));
-        pigeon = new Pigeon2(Constants.Sensors.Pigeon.id, Constants.canbus);
-        intake_s = new IntakeSub();
-        outtake_s = new OuttakeSub();
-        climb_s = new ClimbSub();
+        pigeon = new Pigeon2(Constants.Sensors.pigeonId, Constants.canbus);
+        candle = new CANdle(Constants.Sensors.candleId, Constants.canbus);
+        s_led = new LED(candle);
+        s_intake = new Intake();
+        s_climb = new Climb();
+        s_pivot = new Pivot();
+        s_indexer = new Indexer();
+        s_flywheel = new Flywheel();
+        s_hood = new Hood();
+        s_belt = new Belt();
+        distanceSide = new DistanceSide();
         distanceCacheFront =
             new DistanceCaching(
                 Constants.Sensors.Distance.leftId,
@@ -130,12 +152,19 @@ public class RobotContainer {
                 new VisionIOPhotonVisionSim(camera2Name, robotToCamera2, drive::getPose),
                 new VisionIOPhotonVisionSim(camera3Name, robotToCamera3, drive::getPose));
 
-        pigeon = new Pigeon2(Constants.Sensors.Pigeon.id, Constants.canbus);
-
-        // vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
-        intake_s = new IntakeSub();
-        outtake_s = new OuttakeSub();
-        climb_s = new ClimbSub();
+        pigeon = new Pigeon2(Constants.Sensors.pigeonId, Constants.canbus);
+        candle = new CANdle(Constants.Sensors.candleId, Constants.canbus);
+        s_led = new LED(candle);
+        s_intake = new Intake();
+        s_climb = new Climb();
+        s_intake = new Intake();
+        s_climb = new Climb();
+        s_pivot = new Pivot();
+        s_indexer = new Indexer();
+        s_flywheel = new Flywheel();
+        s_hood = new Hood();
+        s_belt = new Belt();
+        distanceSide = new DistanceSide();
         distanceCacheFront =
             new DistanceCaching(
                 Constants.Sensors.Distance.leftId,
@@ -165,11 +194,19 @@ public class RobotContainer {
                 new VisionIO() {},
                 new VisionIO() {},
                 new VisionIO() {});
-        pigeon = new Pigeon2(Constants.Sensors.Pigeon.id, Constants.canbus);
-        // vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
-        intake_s = new IntakeSub();
-        outtake_s = new OuttakeSub();
-        climb_s = new ClimbSub();
+        pigeon = new Pigeon2(Constants.Sensors.pigeonId, Constants.canbus);
+        candle = new CANdle(Constants.Sensors.candleId, Constants.canbus);
+        s_led = new LED(candle);
+        s_intake = new Intake();
+        s_climb = new Climb();
+        s_intake = new Intake();
+        s_climb = new Climb();
+        s_pivot = new Pivot();
+        s_indexer = new Indexer();
+        s_flywheel = new Flywheel();
+        s_hood = new Hood();
+        s_belt = new Belt();
+        distanceSide = new DistanceSide();
         distanceCacheFront =
             new DistanceCaching(
                 Constants.Sensors.Distance.leftId,
@@ -222,35 +259,38 @@ public class RobotContainer {
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
-            drive,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
-
+            drive, () -> -driver.getLeftY(), () -> -driver.getLeftX(), () -> -driver.getRightX()));
     // Switch to X pattern when X button is pressed
     // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
     // Reset gyro to 0° when Y button is pressed
-    controller
-        .y()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        drive.setPose(
-                            new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
-                    drive)
-                .ignoringDisable(true));
-
-    // controller.leftTrigger(0.02).whileTrue(new Intake(intake_s));
-    // controller.leftBumper().whileTrue(new ReverseIntake(intake_s));
-    // controller.rightTrigger(0.02).whileTrue(new Shoot(outtake_s, drive));
-    controller
-        .a()
+    // driver
+    //     .y()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //                 () ->
+    //                     drive.setPose(
+    //                         new Pose2d(drive.getPose().getTranslation(), new Rotation2d())),
+    //                 drive)
+    //             .ignoringDisable(true));
+    driver
+        .rightTrigger(0.2)
         .whileTrue(
-            new ShootAlign(drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
-    controller.b().whileTrue(new ClimbUp(climb_s));
-    controller.x().whileTrue(new ClimbDown(climb_s));
-    controller.rightBumper().whileTrue(new ClimbRight(drive, distanceCacheFront));
+            new ShootAlign(drive, s_led, () -> -driver.getLeftY(), () -> -driver.getLeftX()));
+    driver.rightBumper().whileTrue(new ClimbRight(drive, distanceCacheFront));
+    driver.leftTrigger(0.2).whileTrue(new PassAlign(s_led, drive));
+    operator.rightBumper().whileTrue(new ElevatorDown(s_led, s_climb));
+    operator.leftBumper().whileTrue(new ElevatorUp(s_led, s_climb));
+    operator.leftTrigger(0.2).onTrue(new FlywheelSpinUp(s_flywheel));
+    operator
+        .rightTrigger(0.2)
+        .whileTrue(
+            new Shoot(s_led, s_flywheel, s_indexer, s_belt, s_intake, s_pivot, s_hood, drive));
+    operator
+        .b()
+        .whileTrue(
+            new PassShoot(s_led, s_flywheel, s_indexer, s_belt, s_intake, s_pivot, s_hood, drive));
+    operator.x().whileTrue(new RunIntake(s_led, s_intake));
   }
 
   /**
