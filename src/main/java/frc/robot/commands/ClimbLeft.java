@@ -59,7 +59,7 @@ public class ClimbLeft extends Command {
 
     // Note, the 2ft buffer distance is now gone
     Pose2d blueClimb =
-        new Pose2d(Inches.of(42), Inches.of(204), new Rotation2d()); // 120 in + 84 in
+        new Pose2d(Inches.of(42), Inches.of(175), new Rotation2d()); // 120 in + 84 in
     Pose2d redClimb =
         new Pose2d(Inches.of(582.22), Inches.of(143.535 - 13.5 - 48 - 100), new Rotation2d());
     boolean isBlueAlliance = true;
@@ -82,7 +82,7 @@ public class ClimbLeft extends Command {
       xDist = distCache.getXDistance();
       numValidRangeMeasurements = 2;
       double rangeDiff = distCache.getDifference();
-      shouldTurn = Math.abs(rangeDiff) > 0.005; // 0.05 is deadaspace
+      shouldTurn = Math.abs(rangeDiff) > 0.005; // 0.005 is deadaspace
       double deltaSign = 1;
       if (rangeDiff < 0) {
         deltaSign = -1;

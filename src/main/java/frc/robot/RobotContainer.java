@@ -28,8 +28,8 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.ClimbDown;
+import frc.robot.commands.ClimbLeft;
 // import frc.robot.commands.ClimbRight;
-import frc.robot.commands.ClimbRight;
 import frc.robot.commands.ClimbUp;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ShootAlign;
@@ -256,7 +256,7 @@ public class RobotContainer {
             new ShootAlign(drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
     controller.b().whileTrue(new ClimbUp(climb_s));
     controller.x().whileTrue(new ClimbDown(climb_s));
-    controller.rightBumper().whileTrue(new ClimbRight(drive, distanceCacheBack));
+    controller.rightBumper().whileTrue(new ClimbLeft(drive, distanceCacheBack));
   }
 
   /**
