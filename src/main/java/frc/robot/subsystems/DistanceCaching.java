@@ -19,24 +19,28 @@ public class DistanceCaching extends SubsystemBase {
   private final int queueSize = 18;
   private final int maxBadMeasurements = 20;
   int leftId, rightId;
+  double offset;
   /** Creates a new DistanceCaching. */
-  public DistanceCaching(int leftId, int rightId) {
+  // offset is the always posotive x translation of the distance sensors to the centerline (x=0
+  // line)
+  public DistanceCaching(int leftId, int rightId, double offset) {
     left = new TimeOfFlight(leftId);
     right = new TimeOfFlight(rightId);
     this.leftId = leftId;
     this.rightId = rightId;
+    this.offset = offset;
   }
 
   public double getResult() {
     if (badLeftNum < maxBadMeasurements && badRightNum < maxBadMeasurements) {
-      return (getRight() / 1000 + getLeft() / 1000) / 2;
+      return ((getRight() + getLeft()) / 2) + offset;
     }
-    return Math.max(getRight() / 1000, getLeft() / 1000);
+    return Math.max(getRight(), getLeft()) + offset;
   }
 
   public double getDifference() {
     if (badLeftNum < maxBadMeasurements && badRightNum < maxBadMeasurements) {
-      return getLeft() / 1000 - getRight() / 1000;
+      return getRight() - getLeft();
     }
     return 0;
   }

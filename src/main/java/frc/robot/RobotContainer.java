@@ -29,7 +29,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.ClimbDown;
 // import frc.robot.commands.ClimbRight;
-import frc.robot.commands.ClimbLeft;
+import frc.robot.commands.ClimbRight;
 import frc.robot.commands.ClimbUp;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ShootAlign;
@@ -101,10 +101,14 @@ public class RobotContainer {
         climb_s = new ClimbSub();
         distanceCacheFront =
             new DistanceCaching(
-                Constants.Sensors.Distance.leftId, Constants.Sensors.Distance.rightId);
+                Constants.Sensors.Distance.leftId,
+                Constants.Sensors.Distance.rightId,
+                Constants.Sensors.Distance.frontOffset);
         distanceCacheBack =
             new DistanceCaching(
-                Constants.Sensors.Distance.backLeftId, Constants.Sensors.Distance.backRightId);
+                Constants.Sensors.Distance.backLeftId,
+                Constants.Sensors.Distance.backRightId,
+                Constants.Sensors.Distance.backOffset);
 
         // vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
         break;
@@ -134,10 +138,14 @@ public class RobotContainer {
         climb_s = new ClimbSub();
         distanceCacheFront =
             new DistanceCaching(
-                Constants.Sensors.Distance.leftId, Constants.Sensors.Distance.rightId);
+                Constants.Sensors.Distance.leftId,
+                Constants.Sensors.Distance.rightId,
+                Constants.Sensors.Distance.frontOffset);
         distanceCacheBack =
             new DistanceCaching(
-                Constants.Sensors.Distance.backLeftId, Constants.Sensors.Distance.backRightId);
+                Constants.Sensors.Distance.backLeftId,
+                Constants.Sensors.Distance.backRightId,
+                Constants.Sensors.Distance.backOffset);
 
         break;
 
@@ -164,10 +172,14 @@ public class RobotContainer {
         climb_s = new ClimbSub();
         distanceCacheFront =
             new DistanceCaching(
-                Constants.Sensors.Distance.leftId, Constants.Sensors.Distance.rightId);
+                Constants.Sensors.Distance.leftId,
+                Constants.Sensors.Distance.rightId,
+                Constants.Sensors.Distance.frontOffset);
         distanceCacheBack =
             new DistanceCaching(
-                Constants.Sensors.Distance.backLeftId, Constants.Sensors.Distance.backRightId);
+                Constants.Sensors.Distance.backLeftId,
+                Constants.Sensors.Distance.backRightId,
+                Constants.Sensors.Distance.backOffset);
         break;
     }
     NamedCommands.registerCommand(
@@ -238,7 +250,7 @@ public class RobotContainer {
             new ShootAlign(drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
     controller.b().whileTrue(new ClimbUp(climb_s));
     controller.x().whileTrue(new ClimbDown(climb_s));
-    controller.rightBumper().whileTrue(new ClimbLeft(drive, distanceCacheBack));
+    controller.rightBumper().whileTrue(new ClimbRight(drive, distanceCacheFront));
   }
 
   /**
