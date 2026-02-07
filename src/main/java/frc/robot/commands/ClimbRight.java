@@ -62,7 +62,7 @@ public class ClimbRight extends Command {
     Pose2d redClimb =
         new Pose2d(Inches.of(582.22), Inches.of(143.535 - 13.5 - 48 - 100), new Rotation2d());
     boolean isBlueAlliance = true;
-    boolean omegaPassed = false;
+    boolean shouldTurn = false;
     double directionMult = 1;
     Pose2d climbPose = blueClimb;
     if (currPose.getX() > aprilTagLayout.getFieldLength() / 2) { // Far-side(red)
@@ -74,38 +74,38 @@ public class ClimbRight extends Command {
     }
     Logger.recordOutput("climb/climbPose", climbPose);
     // X
-    int numValid = 0; // Purposely doesnt use distCache to avoid runtime changes
+    int numValidRangeMeasurements = 0; // Purposely doesnt use distCache to avoid runtime changes
     double xDist = 0;
-    DoubleSupplier omegaSupplier = () -> 0;
+    DoubleSupplier turnCommandSupplier = () -> 0;
     if (distCache.bothValid()) {
       xDist = distCache.getXDistance();
-      numValid = 2;
-      double deltaOmega = distCache.getDifference();
-      omegaPassed = Math.abs(deltaOmega) > 0.08; // 0.05 is deadaspace
+      numValidRangeMeasurements = 2;
+      double rangeDiff = distCache.getDifference();
+      shouldTurn = Math.abs(rangeDiff) > 0.005; // 0.05 is deadaspace
       double deltaSign = 1;
-      if (deltaOmega < 0) {
+      if (rangeDiff < 0) {
         deltaSign = -1;
       }
-      double s = deltaSign;
-      double o = deltaOmega;
-      Logger.recordOutput("deltaOmega", deltaOmega);
+      double deltaSign2 = deltaSign;
+      double rangeDiff2 = rangeDiff;
+      Logger.recordOutput("rangeDiff", rangeDiff);
       Logger.recordOutput("Left valid", distCache.leftMeasurementsValid());
       Logger.recordOutput("right valid", distCache.rightMeasurementsValid());
-      omegaSupplier = () -> MathUtil.clamp(Math.abs(o), 0.23, 0.7) * s;
+      turnCommandSupplier = () -> MathUtil.clamp(Math.abs(rangeDiff2), 0.23, 0.7) * deltaSign2;
     } else {
-      omegaPassed = false;
+      shouldTurn = false;
       if (distCache.rightMeasurementsValid()) {
         xDist = distCache.getRightFiltered();
-        numValid = 1;
+        numValidRangeMeasurements = 1;
       } else if (distCache.leftMeasurementsValid()) {
         xDist = distCache.getLeftFiltered();
-        numValid = 1;
+        numValidRangeMeasurements = 1;
       } else {
-        numValid = 0;
+        numValidRangeMeasurements = 0;
       }
     }
     DoubleSupplier xSupplier;
-    if (numValid == 2 || numValid == 1) {
+    if (numValidRangeMeasurements == 2 || numValidRangeMeasurements == 1) {
       double x = (xDist - climbPose.getX()) * directionMult;
       int xSign = 1;
       if (x < 0) {
@@ -129,7 +129,7 @@ public class ClimbRight extends Command {
     double deltaY = (currPose.getY() - climbPose.getY()) * -directionMult; // .4064=16in to m
     DoubleSupplier ySupplier = () -> MathUtil.clamp(-deltaY, -1, 1);
     // omegaPassed = omegaPassed && time < 100; // bad practice, but its fine :)
-    joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, omegaSupplier, omegaPassed);
+    joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, turnCommandSupplier, shouldTurn);
     Logger.recordOutput("Xdist", xDist);
   }
 
