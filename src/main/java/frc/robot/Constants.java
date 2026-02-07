@@ -13,6 +13,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.signals.RGBWColor;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -59,8 +60,14 @@ public final class Constants {
   public static final String canbus = "rio";
 
   public static class Sensors {
-    public static class Pigeon {
-      public static final int id = 13;
+    public static final int pigeonId = 13;
+    public static final int candleId = 28;
+
+    public static class Ports {
+      public static final int ElevatorEncoderPort1 = 3;
+      public static final int ElevatorEncoderPort2 = 4;
+      public static final int PivotEncoderPort1 = 5;
+      public static final int PivotEncoderPort2 = 6;
     }
 
     public static class Distance {
@@ -69,13 +76,29 @@ public final class Constants {
       public static final double xRobotOffsetFront = 0.3302; // 9 in in m
       public static final int backLeftId = 22;
       public static final int backRightId = 23;
+      public static final int climbSideId = 27;
       public static final double xRobotOffsetBack = 0.12065; // 4 3/4 in in m
     }
   }
 
   public static class Motors {
     public static final int intakeId = 15;
-    public static final int outtakeId = 14;
-    public static final int climbId = 17;
+    public static final int indexId = 14;
+    public static final int flywheelId = 16;
+    public static final int pivotId = 18;
+    public static final int beltId = 19;
+    public static final int climbRightId = 17;
+    public static final int climbLeftId = 24;
+    public static final int climbGrabberId = 25;
+    public static final int hoodId = 26;
+  }
+
+  public static final class Colors {
+    public static final RGBWColor green = new RGBWColor(144, 238, 144);
+    public static final RGBWColor blank = new RGBWColor(0, 0, 0);
+    public static final RGBWColor yellow = new RGBWColor(255, 255, 0);
+    public static final RGBWColor purple = new RGBWColor(160, 32, 240);
+    public static final RGBWColor blue = new RGBWColor(0, 0, 255);
+    public static final RGBWColor red = new RGBWColor(255, 0, 0);
   }
 }

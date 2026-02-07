@@ -4,11 +4,8 @@
 
 package frc.robot.commands;
 
-import static edu.wpi.first.units.Units.Inches;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Belt;
 import frc.robot.subsystems.Flywheel;
@@ -20,28 +17,24 @@ import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.drive.Drive;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class Shoot extends Command {
+public class PassShoot extends Command {
   private LED s_led;
   private Flywheel s_flywheel;
   private Indexer s_indexer;
   private Belt s_belt;
   private Intake s_intake;
   private Pivot s_pivot;
-  private Hood s_hood;
   private Drive s_drive;
+  private Hood s_hood;
   private long lastAgitation;
   private final double agitationIntervalTime = 1000;
   private final double beltVolts = 2;
   private final double indexerVolts = 2;
   private final double intakeVolts = 4;
-
-  // Format: distance from hub(diagonally), optimized hood goal, optimized flywheel goal
-  private final double[][] lookupTable = {
-    {0., 0., 0.},
-    {0.1, 1., 1.}
-  };
+  private final double hoodGoal = 1;
+  private final double flywheelGoal = 2;
   /** Creates a new Outtake. */
-  public Shoot(
+  public PassShoot(
       LED s_led,
       Flywheel s_flywheel,
       Indexer s_indexer,
@@ -73,37 +66,6 @@ public class Shoot extends Command {
   @Override
   public void execute() {
     // Idk whal algothm we're gonna do for calculating flywheel volts or hood angle yet
-    Pose2d currPose = s_drive.getPose();
-    // Close-side(blue)
-    Pose2d hubPose = new Pose2d(Inches.of(182.11), Inches.of(158.84), new Rotation2d(0));
-    if (currPose.getX() > aprilTagLayout.getFieldLength() / 2) { // Far-side(red)
-      hubPose = new Pose2d(Inches.of(469.11), Inches.of(158.84), new Rotation2d(0));
-    }
-    // Pythagorean
-    double distToHub =
-        Math.sqrt(
-            Math.pow(Math.abs(hubPose.getX() - currPose.getX()), 2)
-                + Math.pow(Math.abs(hubPose.getY() - currPose.getY()), 2));
-
-    double[] oneCloserVals = lookupTable[0];
-    double[] oneFartherVals = lookupTable[lookupTable.length - 1];
-    for (int i = 0; i < lookupTable.length; i++) {
-      double tableDist = lookupTable[i][0];
-      if (distToHub > tableDist && distToHub - tableDist < distToHub - oneCloserVals[0]) {
-        oneCloserVals = lookupTable[i];
-      } else if (tableDist > distToHub) {
-        oneFartherVals = lookupTable[i];
-        break;
-      }
-    }
-    double interpolationConst =
-        (distToHub - oneCloserVals[0]) / (oneFartherVals[0] - oneCloserVals[0]);
-    double interpolatedHoodGoal =
-        (oneFartherVals[1] - oneCloserVals[0]) * interpolationConst + oneCloserVals[1];
-    double interpolatedFlywheelGoal =
-        (oneFartherVals[2] - oneCloserVals[2]) * interpolationConst + oneCloserVals[2];
-    s_hood.setGoal(interpolatedHoodGoal);
-    s_flywheel.setGoal(interpolatedFlywheelGoal);
     // Agitation
     long timeSinceLastAgitation = System.currentTimeMillis() - lastAgitation;
     if (timeSinceLastAgitation > agitationIntervalTime) {
@@ -113,6 +75,8 @@ public class Shoot extends Command {
     s_belt.setVoltage(beltVolts);
     s_intake.setVoltage(intakeVolts);
     s_indexer.setVoltage(indexerVolts);
+    s_hood.setGoal(hoodGoal);
+    s_flywheel.setGoal(flywheelGoal);
   }
 
   // Called once the command ends or is interrupted.
@@ -123,6 +87,7 @@ public class Shoot extends Command {
     s_intake.setVoltage(0);
     s_indexer.setVoltage(0);
     s_led.setShooting(false);
+    s_flywheel.setGoal(0);
   }
 
   // Returns true when the command should end.
