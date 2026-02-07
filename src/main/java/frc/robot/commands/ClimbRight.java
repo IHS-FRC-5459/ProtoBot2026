@@ -5,7 +5,7 @@
 package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Inches;
-import static frc.robot.Constants.Sensors.Distance.*;
+// import static frc.robot.Constants.Sensors.Distance.*;
 import static frc.robot.commands.DriveCommands.joystickDriveRelativeCustom;
 import static frc.robot.commands.DriveCommands.setIsFirstCall;
 import static frc.robot.subsystems.vision.VisionConstants.*;
@@ -56,12 +56,11 @@ public class ClimbRight extends Command {
     Pose2d currPose = s_drive.getPose();
     // want to go to to make sure we are going in with good alignment
     // Blue alliance
-    Rotation2d blueClimbRot = new Rotation2d(0); // Facing the alliance wall
-    Rotation2d redClimbRot = new Rotation2d(Math.PI);
+
     // Note, the 2ft buffer distance is now gone
-    Pose2d blueClimb = new Pose2d(Inches.of(44), Inches.of(93), blueClimbRot);
+    Pose2d blueClimb = new Pose2d(Inches.of(42), Inches.of(120.5), new Rotation2d());
     Pose2d redClimb =
-        new Pose2d(Inches.of(582.22), Inches.of(143.535 - 13.5 - 48 - 100), redClimbRot);
+        new Pose2d(Inches.of(582.22), Inches.of(143.535 - 13.5 - 48 - 100), new Rotation2d());
     boolean isBlueAlliance = true;
     boolean omegaPassed = false;
     double directionMult = 1;
@@ -79,10 +78,10 @@ public class ClimbRight extends Command {
     double xDist = 0;
     DoubleSupplier omegaSupplier = () -> 0;
     if (distCache.bothValid()) {
-      xDist = distCache.getResult();
+      xDist = distCache.getXDistance();
       numValid = 2;
       double deltaOmega = distCache.getDifference();
-      omegaPassed = Math.abs(deltaOmega) > 0.03; // 0.05 is deadaspace
+      omegaPassed = Math.abs(deltaOmega) > 0.08; // 0.05 is deadaspace
       double deltaSign = 1;
       if (deltaOmega < 0) {
         deltaSign = -1;
@@ -90,14 +89,16 @@ public class ClimbRight extends Command {
       double s = deltaSign;
       double o = deltaOmega;
       Logger.recordOutput("deltaOmega", deltaOmega);
+      Logger.recordOutput("Left valid", distCache.leftMeasurementsValid());
+      Logger.recordOutput("right valid", distCache.rightMeasurementsValid());
       omegaSupplier = () -> MathUtil.clamp(Math.abs(o), 0.23, 0.7) * s;
     } else {
       omegaPassed = false;
-      if (distCache.rightValid()) {
-        xDist = distCache.getRight() + (robotWidth / 2);
+      if (distCache.rightMeasurementsValid()) {
+        xDist = distCache.getRightFiltered();
         numValid = 1;
-      } else if (distCache.leftValid()) {
-        xDist = distCache.getLeft() + (robotWidth / 2);
+      } else if (distCache.leftMeasurementsValid()) {
+        xDist = distCache.getLeftFiltered();
         numValid = 1;
       } else {
         numValid = 0;
@@ -110,10 +111,13 @@ public class ClimbRight extends Command {
       if (x < 0) {
         xSign = -1;
       }
-      if (Math.abs(x) < 0.008) {
+      boolean skip = Math.abs(x) < 0.012;
+      Logger.recordOutput("x", x);
+      Logger.recordOutput("skip", skip);
+      x = MathUtil.clamp(Math.abs(x), 0.2, 0.5) * xSign;
+      if (skip) {
         x = 0;
       }
-      x = MathUtil.clamp(Math.abs(x), 0.2, 0.5) * xSign;
       Logger.recordOutput("math/diff", x);
       double xS = x;
       xSupplier = () -> xS;
@@ -126,6 +130,7 @@ public class ClimbRight extends Command {
     DoubleSupplier ySupplier = () -> MathUtil.clamp(-deltaY, -1, 1);
     // omegaPassed = omegaPassed && time < 100; // bad practice, but its fine :)
     joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, omegaSupplier, omegaPassed);
+    Logger.recordOutput("Xdist", xDist);
   }
 
   // Called once the command ends or is interrupted.

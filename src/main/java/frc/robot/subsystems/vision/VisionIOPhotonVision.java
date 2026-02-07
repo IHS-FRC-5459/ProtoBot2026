@@ -99,8 +99,6 @@ public class VisionIOPhotonVision implements VisionIO {
           // Add tag ID
           Logger.recordOutput("Adding tag ids normally", false);
           tagIds.add((short) target.fiducialId);
-          Logger.recordOutput("h", false);
-
           // Add observation
           poseObservations.add(
               new PoseObservation(

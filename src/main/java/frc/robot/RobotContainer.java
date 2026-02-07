@@ -101,14 +101,16 @@ public class RobotContainer {
         climb_s = new ClimbSub();
         distanceCacheFront =
             new DistanceCaching(
-                Constants.Sensors.Distance.leftId,
-                Constants.Sensors.Distance.rightId,
-                Constants.Sensors.Distance.frontOffset);
+                Constants.Sensors.Distance.frontLeftId,
+                Constants.Sensors.Distance.frontRightId,
+                Constants.Sensors.Distance.xRobotOffsetFront,
+                "front");
         distanceCacheBack =
             new DistanceCaching(
                 Constants.Sensors.Distance.backLeftId,
                 Constants.Sensors.Distance.backRightId,
-                Constants.Sensors.Distance.backOffset);
+                Constants.Sensors.Distance.xRobotOffsetBack,
+                "back");
 
         // vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
         break;
@@ -138,14 +140,16 @@ public class RobotContainer {
         climb_s = new ClimbSub();
         distanceCacheFront =
             new DistanceCaching(
-                Constants.Sensors.Distance.leftId,
-                Constants.Sensors.Distance.rightId,
-                Constants.Sensors.Distance.frontOffset);
+                Constants.Sensors.Distance.frontLeftId,
+                Constants.Sensors.Distance.frontRightId,
+                Constants.Sensors.Distance.xRobotOffsetFront,
+                "front");
         distanceCacheBack =
             new DistanceCaching(
                 Constants.Sensors.Distance.backLeftId,
                 Constants.Sensors.Distance.backRightId,
-                Constants.Sensors.Distance.backOffset);
+                Constants.Sensors.Distance.xRobotOffsetBack,
+                "back");
 
         break;
 
@@ -172,14 +176,16 @@ public class RobotContainer {
         climb_s = new ClimbSub();
         distanceCacheFront =
             new DistanceCaching(
-                Constants.Sensors.Distance.leftId,
-                Constants.Sensors.Distance.rightId,
-                Constants.Sensors.Distance.frontOffset);
+                Constants.Sensors.Distance.frontLeftId,
+                Constants.Sensors.Distance.frontRightId,
+                Constants.Sensors.Distance.xRobotOffsetFront,
+                "front");
         distanceCacheBack =
             new DistanceCaching(
                 Constants.Sensors.Distance.backLeftId,
                 Constants.Sensors.Distance.backRightId,
-                Constants.Sensors.Distance.backOffset);
+                Constants.Sensors.Distance.xRobotOffsetBack,
+                "back");
         break;
     }
     NamedCommands.registerCommand(

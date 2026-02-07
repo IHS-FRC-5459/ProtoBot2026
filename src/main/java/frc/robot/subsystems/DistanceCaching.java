@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.playingwithfusion.TimeOfFlight;
+import com.playingwithfusion.TimeOfFlight.RangingMode;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -12,100 +13,96 @@ import org.littletonrobotics.junction.Logger;
 
 public class DistanceCaching extends SubsystemBase {
   TimeOfFlight left, right;
-  Queue<Double> leftQ = new LinkedList<>();
-  Queue<Double> rightQ = new LinkedList<>();
-  int badLeftNum = 0;
-  int badRightNum = 0;
-  private final int queueSize = 18;
-  private final int maxBadMeasurements = 20;
+  Queue<Double> leftDistancesQ = new LinkedList<>();
+  Queue<Double> rightDistanceQ = new LinkedList<>();
+  private final int queueSize = 5;
   int leftId, rightId;
   double offset;
+  String direction;
   /** Creates a new DistanceCaching. */
   // offset is the always posotive x translation of the distance sensors to the centerline (x=0
   // line)
-  public DistanceCaching(int leftId, int rightId, double offset) {
+  public DistanceCaching(int leftId, int rightId, double offset, String direction) {
     left = new TimeOfFlight(leftId);
     right = new TimeOfFlight(rightId);
+    left.setRangingMode(RangingMode.Short, 24);
+    right.setRangingMode(RangingMode.Short, 24);
     this.leftId = leftId;
     this.rightId = rightId;
     this.offset = offset;
+    this.direction = direction;
   }
 
-  public double getResult() {
-    if (badLeftNum < maxBadMeasurements && badRightNum < maxBadMeasurements) {
-      return ((getRight() + getLeft()) / 2) + offset;
-    }
-    return Math.max(getRight(), getLeft()) + offset;
+  public double getXDistance() {
+    return ((getRightFiltered() + getLeftFiltered()) / 2 + offset);
   }
 
   public double getDifference() {
-    if (badLeftNum < maxBadMeasurements && badRightNum < maxBadMeasurements) {
-      return getRight() - getLeft();
-    }
-    return 0;
+    return getRightFiltered() - getLeftFiltered();
   }
 
-  public double getLeft() {
-    double total = 0;
+  public double getLeftFiltered() {
+    double sumOfDistanceMeasurements = 0;
     int numZeroes = 0;
-    for (double d : leftQ) {
-      total += d;
-      if (d == 0) {
-        badLeftNum++;
+    for (double distanceMeasurement : leftDistancesQ) {
+      sumOfDistanceMeasurements += distanceMeasurement;
+      if (distanceMeasurement == 0) {
         numZeroes++;
-      } else {
-        badLeftNum = 0;
       }
     }
-    if (total == 0) {
+    if (sumOfDistanceMeasurements == 0) {
       return -1;
     }
-    return (total / (leftQ.size() - numZeroes)) / 1000;
+    return (sumOfDistanceMeasurements / (leftDistancesQ.size() - numZeroes)) / 1000;
   }
 
-  public double getRight() {
-    double total = 0;
+  public double getRightFiltered() {
+    double sumOfDistancesMeasurements = 0;
     int numZeroes = 0;
-    for (double d : rightQ) {
-      total += d;
-      if (d == 0) {
-        badRightNum++;
+    for (double distanceMeasurements : rightDistanceQ) {
+      sumOfDistancesMeasurements += distanceMeasurements;
+      if (distanceMeasurements <= 0) {
         numZeroes++;
-      } else {
-        badRightNum = 0;
       }
     }
-    if (total == 0) {
+    if (sumOfDistancesMeasurements == 0) {
       return -1;
     }
-    return (total / (rightQ.size() - numZeroes)) / 1000;
+    return (sumOfDistancesMeasurements / (rightDistanceQ.size() - numZeroes)) / 1000;
   }
 
-  public boolean leftValid() {
-    return getLeft() != -1;
+  public boolean leftMeasurementsValid() {
+    return getLeftFiltered() != -1;
   }
 
-  public boolean rightValid() {
-    return getRight() != -1;
+  public boolean rightMeasurementsValid() {
+    return getRightFiltered() != -1;
   }
 
   public boolean bothValid() {
-    return leftValid() && rightValid();
+    return leftMeasurementsValid() && rightMeasurementsValid();
   }
 
   @Override
   public void periodic() {
+
     // This method will be called once per scheduler run
-    leftQ.add(left.getRange());
-    if (leftQ.size() > queueSize) {
-      leftQ.remove();
+    double leftRawDistance = left.getRange();
+    leftDistancesQ.add(leftRawDistance);
+    if (leftDistancesQ.size() > queueSize) {
+      leftDistancesQ.remove();
     }
-    rightQ.add(right.getRange());
-    if (rightQ.size() > queueSize) {
-      rightQ.remove();
+    double rightRawDistance = right.getRange();
+    rightDistanceQ.add(rightRawDistance);
+    if (rightDistanceQ.size() > queueSize) {
+      rightDistanceQ.remove();
     }
-    Logger.recordOutput("distance/left" + leftId, getLeft());
-    Logger.recordOutput("distance/right" + rightId, getRight());
-    Logger.recordOutput("distance/avg" + leftId, getResult());
+    Logger.recordOutput("distance/rawdistancesleftdistsensor" + direction, leftRawDistance);
+    Logger.recordOutput("distance/rawdistancesrightdistsensor" + direction, rightRawDistance);
+    Logger.recordOutput("distance/left" + direction, getLeftFiltered());
+    Logger.recordOutput("distance/right" + direction, getRightFiltered());
+    Logger.recordOutput("distance/avg" + direction, getXDistance());
+    Logger.recordOutput("distance/getSampletimeleft", left.getSampleTime());
+    Logger.recordOutput("distance/isleftvalid", leftMeasurementsValid());
   }
 }

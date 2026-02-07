@@ -5,7 +5,7 @@
 package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.Inches;
-import static frc.robot.Constants.Sensors.Distance.*;
+// import static frc.robot.Constants.Sensors.Distance.*;
 import static frc.robot.commands.DriveCommands.joystickDriveRelativeCustom;
 import static frc.robot.commands.DriveCommands.setIsFirstCall;
 import static frc.robot.subsystems.vision.VisionConstants.*;
@@ -77,7 +77,7 @@ public class ClimbLeft extends Command {
     double xDist = 0;
     DoubleSupplier omegaSupplier = () -> 0;
     if (distCache.bothValid()) {
-      xDist = distCache.getResult();
+      xDist = distCache.getXDistance();
       numValid = 2;
       double deltaOmega = distCache.getDifference();
       omegaPassed = Math.abs(deltaOmega) > 0.03; // 0.05 is deadaspace
@@ -91,11 +91,11 @@ public class ClimbLeft extends Command {
       omegaSupplier = () -> MathUtil.clamp(Math.abs(o), 0.23, 0.7) * s;
     } else {
       omegaPassed = false;
-      if (distCache.rightValid()) {
-        xDist = distCache.getRight() + (robotWidth / 2);
+      if (distCache.rightMeasurementsValid()) {
+        xDist = distCache.getRightFiltered(); // This is wrong; change later!!!!
         numValid = 1;
-      } else if (distCache.leftValid()) {
-        xDist = distCache.getLeft() + (robotWidth / 2);
+      } else if (distCache.leftMeasurementsValid()) {
+        xDist = distCache.getLeftFiltered(); // This is wrong; change later!!!!
         numValid = 1;
       } else {
         numValid = 0;
