@@ -26,9 +26,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.ClimbRight;
-import frc.robot.commands.ClimbDown;
-import frc.robot.commands.ClimbLeft;
-import frc.robot.commands.ClimbUp;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorDown;
 import frc.robot.commands.ElevatorUp;
@@ -300,7 +297,6 @@ public class RobotContainer {
         .whileTrue(
             new PassShoot(s_led, s_flywheel, s_indexer, s_belt, s_intake, s_pivot, s_hood, drive));
     operator.x().whileTrue(new RunIntake(s_led, s_intake));
-            new ShootAlign(drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
   }
 
   /**
