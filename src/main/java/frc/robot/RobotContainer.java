@@ -256,7 +256,7 @@ public class RobotContainer {
             new ShootAlign(drive, () -> -controller.getLeftY(), () -> -controller.getLeftX()));
     controller.b().whileTrue(new ClimbUp(climb_s));
     controller.x().whileTrue(new ClimbDown(climb_s));
-    controller.rightBumper().whileTrue(new ClimbRight(drive, distanceCacheFront));
+    controller.rightBumper().whileTrue(new ClimbRight(drive, distanceCacheBack));
   }
 
   /**
