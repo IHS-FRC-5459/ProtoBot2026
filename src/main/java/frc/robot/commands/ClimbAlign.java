@@ -4,7 +4,6 @@
 
 package frc.robot.commands;
 
-import static edu.wpi.first.units.Units.Inches;
 // import static frc.robot.Constants.Sensors.Distance.*;
 import static frc.robot.commands.DriveCommands.joystickDriveRelativeCustom;
 import static frc.robot.commands.DriveCommands.setIsFirstCall;
@@ -12,7 +11,6 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DistanceCaching;
 import frc.robot.subsystems.drive.Drive;
@@ -20,12 +18,12 @@ import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class ClimbRight extends Command {
+public class ClimbAlign extends Command {
   DistanceCaching distCache;
   Drive s_drive;
   /** Creates a new Climb. */
   // Climbs the right side of the climb structure(from the perspective of the alliance station)
-  public ClimbRight(Drive s_drive, DistanceCaching distCache) {
+  public ClimbAlign(Drive s_drive) {
     // Use addRequirements() here to declare subsystem dependencies.
     // addRequirements(s_drive);
     this.s_drive = s_drive;
@@ -54,24 +52,17 @@ public class ClimbRight extends Command {
   @Override
   public void execute() {
     Pose2d currPose = s_drive.getPose();
+    ClimbParams climbParams = new ClimbParams(currPose);
+
     // want to go to to make sure we are going in with good alignment
     // Blue alliance
 
     // Note, the 2ft buffer distance is now gone
-    Pose2d blueClimb = new Pose2d(Inches.of(42), Inches.of(120.5), new Rotation2d());
-    Pose2d redClimb =
-        new Pose2d(Inches.of(582.22), Inches.of(143.535 - 13.5 - 48 - 100), new Rotation2d());
+
     boolean isBlueAlliance = true;
     boolean shouldTurn = false;
     double directionMult = 1;
-    Pose2d climbPose = blueClimb;
-    if (currPose.getX() > aprilTagLayout.getFieldLength() / 2) { // Far-side(red)
-      climbPose = redClimb;
-      isBlueAlliance = false;
-    }
-    if (isBlueAlliance) {
-      directionMult = -1;
-    }
+    Pose2d climbPose = climbParams.getGoal();
     Logger.recordOutput("climb/climbPose", climbPose);
     // X
     int numValidRangeMeasurements = 0; // Purposely doesnt use distCache to avoid runtime changes
@@ -81,7 +72,7 @@ public class ClimbRight extends Command {
       xDist = distCache.getXDistance();
       numValidRangeMeasurements = 2;
       double rangeDiff = distCache.getDifference();
-      shouldTurn = Math.abs(rangeDiff) > 0.005; // 0.05 is deadaspace
+      shouldTurn = Math.abs(rangeDiff) > 0.005; // 0.005 is deadaspace
       double deltaSign = 1;
       if (rangeDiff < 0) {
         deltaSign = -1;
@@ -91,7 +82,11 @@ public class ClimbRight extends Command {
       Logger.recordOutput("rangeDiff", rangeDiff);
       Logger.recordOutput("Left valid", distCache.leftMeasurementsValid());
       Logger.recordOutput("right valid", distCache.rightMeasurementsValid());
-      turnCommandSupplier = () -> MathUtil.clamp(Math.abs(rangeDiff2), 0.23, 0.7) * deltaSign2;
+      turnCommandSupplier =
+          () ->
+              MathUtil.clamp(Math.abs(rangeDiff2), 0.23, 0.7)
+                  * deltaSign2
+                  * climbParams.getOmegaMultiplier();
     } else {
       shouldTurn = false;
       if (distCache.rightMeasurementsValid()) {
@@ -120,14 +115,14 @@ public class ClimbRight extends Command {
       }
       Logger.recordOutput("math/diff", x);
       double xS = x;
-      xSupplier = () -> xS;
+      xSupplier = () -> xS * climbParams.getXMultiplier();
     } else {
       xSupplier = () -> 0;
     }
     // Works for both alliances
     // Y
     double deltaY = (currPose.getY() - climbPose.getY()) * -directionMult; // .4064=16in to m
-    DoubleSupplier ySupplier = () -> MathUtil.clamp(-deltaY, -1, 1);
+    DoubleSupplier ySupplier = () -> MathUtil.clamp(-deltaY, -1, 1) * climbParams.getYMultiplier();
     // omegaPassed = omegaPassed && time < 100; // bad practice, but its fine :)
     joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, turnCommandSupplier, shouldTurn);
     Logger.recordOutput("Xdist", xDist);

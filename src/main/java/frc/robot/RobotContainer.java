@@ -25,7 +25,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.ClimbRight;
+import frc.robot.commands.ClimbAlign;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ElevatorDown;
 import frc.robot.commands.ElevatorUp;
@@ -159,8 +159,6 @@ public class RobotContainer {
         s_led = new LED(candle);
         s_intake = new Intake();
         s_climb = new Climb();
-        s_intake = new Intake();
-        s_climb = new Climb();
         s_pivot = new Pivot();
         s_indexer = new Indexer();
         s_flywheel = new Flywheel();
@@ -201,8 +199,6 @@ public class RobotContainer {
         pigeon = new Pigeon2(Constants.Sensors.pigeonId, Constants.canbus);
         candle = new CANdle(Constants.Sensors.candleId, Constants.canbus);
         s_led = new LED(candle);
-        s_intake = new Intake();
-        s_climb = new Climb();
         s_intake = new Intake();
         s_climb = new Climb();
         s_pivot = new Pivot();
@@ -265,7 +261,7 @@ public class RobotContainer {
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
-            drive, () -> -driver.getLeftY(), () -> -driver.getLeftX(), () -> -driver.getRightX()));
+            drive, () -> driver.getLeftY(), () -> driver.getLeftX(), () -> -driver.getRightX()));
     // Switch to X pattern when X button is pressed
     // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
@@ -283,7 +279,7 @@ public class RobotContainer {
         .rightTrigger(0.2)
         .whileTrue(
             new ShootAlign(drive, s_led, () -> -driver.getLeftY(), () -> -driver.getLeftX()));
-    driver.rightBumper().whileTrue(new ClimbRight(drive, distanceCacheFront));
+    driver.rightBumper().whileTrue(new ClimbAlign(drive));
     driver.leftTrigger(0.2).whileTrue(new PassAlign(s_led, drive));
     operator.rightBumper().whileTrue(new ElevatorDown(s_led, s_climb));
     operator.leftBumper().whileTrue(new ElevatorUp(s_led, s_climb));
