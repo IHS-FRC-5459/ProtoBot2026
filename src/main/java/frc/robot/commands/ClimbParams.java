@@ -32,10 +32,13 @@ public class ClimbParams {
     if (estPose.getX() > aprilTagLayout.getFieldLength() / 2) {
       xMultiplier = -1;
       omegaMultiplier = -1;
+    } else {
+      yMultiplier = -1;
     }
-    if (estPose.getX() > aprilTagLayout.getFieldLength()
+    if (estPose.getX() >= aprilTagLayout.getFieldLength()
         && estPose.getY()
-            > 158.85 /*climb struct y */) { // Left red climb align (from looking from blue alliance
+            >= 158.85 /*climb struct y */) { // Left red climb align (from looking from blue
+      // alliance
       // wall)
       goal = new Pose2d(Inches.of(42), Inches.of(175), new Rotation2d());
       distCache =
@@ -45,8 +48,8 @@ public class ClimbParams {
               Sensors.Distance.xRobotOffsetBack,
               "back");
     }
-    if (estPose.getX() < aprilTagLayout.getFieldLength()
-        && estPose.getY() > 147.47 /*climb struct y */) { // Left blue climb align
+    if (estPose.getX() <= aprilTagLayout.getFieldLength()
+        && estPose.getY() >= 147.47 /*climb struct y */) { // Left blue climb align
       goal = new Pose2d(Inches.of(582.22), Inches.of(143.535 - 13.5 - 48 - 100), new Rotation2d());
       distCache =
           new DistanceCaching(
@@ -55,8 +58,8 @@ public class ClimbParams {
               Sensors.Distance.xRobotOffsetFront,
               "front");
     }
-    if (estPose.getX() > aprilTagLayout.getFieldLength()
-        && estPose.getY() < 158.85 /*climb struct y */) { // Right red climb align
+    if (estPose.getX() >= aprilTagLayout.getFieldLength()
+        && estPose.getY() <= 158.85 /*climb struct y */) { // Right red climb align
       goal = new Pose2d(Inches.of(42), Inches.of(120.5), new Rotation2d());
       distCache =
           new DistanceCaching(
@@ -65,8 +68,8 @@ public class ClimbParams {
               Sensors.Distance.xRobotOffsetFront,
               "front");
     }
-    if (estPose.getX() < aprilTagLayout.getFieldLength()
-        && estPose.getY() < 147.47 /*climb struct y */) { // Right blue climb align
+    if (estPose.getX() <= aprilTagLayout.getFieldLength()
+        && estPose.getY() <= 147.47 /*climb struct y */) { // Right blue climb align
       goal = new Pose2d(Inches.of(582.22), Inches.of(143.535 - 13.5 - 48 - 100), new Rotation2d());
       distCache =
           new DistanceCaching(

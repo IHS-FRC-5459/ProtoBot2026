@@ -19,7 +19,6 @@ import org.littletonrobotics.junction.Logger;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ClimbAlign extends Command {
-  DistanceCaching distCache;
   Drive s_drive;
   /** Creates a new Climb. */
   // Climbs the right side of the climb structure(from the perspective of the alliance station)
@@ -27,7 +26,6 @@ public class ClimbAlign extends Command {
     // Use addRequirements() here to declare subsystem dependencies.
     // addRequirements(s_drive);
     this.s_drive = s_drive;
-    this.distCache = distCache;
   }
 
   // Called when the command is initially scheduled.
@@ -53,13 +51,11 @@ public class ClimbAlign extends Command {
   public void execute() {
     Pose2d currPose = s_drive.getPose();
     ClimbParams climbParams = new ClimbParams(currPose);
-
+    DistanceCaching distCache = climbParams.getDistCache();
     // want to go to to make sure we are going in with good alignment
     // Blue alliance
 
     // Note, the 2ft buffer distance is now gone
-
-    boolean isBlueAlliance = true;
     boolean shouldTurn = false;
     double directionMult = 1;
     Pose2d climbPose = climbParams.getGoal();
