@@ -22,15 +22,15 @@ public class Climb extends SubsystemBase {
   TalonFX left, right, grab;
   Encoder m_encoder;
   double goal = 0;
-  double kMaxVelocity = 0;
-  double kS = 0;
-  double kMaxAcceleration = 0;
-  double kP = 0;
-  double kI = 0;
-  double kD = 0;
-  double kG = 0;
-  double kV = 0;
-  double kDt = 0;
+  double kMaxVelocity = 1;
+  double kS = 1;
+  double kMaxAcceleration = 1;
+  double kP = 1;
+  double kI = 1;
+  double kD = 1;
+  double kG = 1;
+  double kV = 1;
+  double kDt = 1;
   private final TrapezoidProfile.Constraints m_constraints =
       new TrapezoidProfile.Constraints(kMaxVelocity, kMaxAcceleration);
   private final ProfiledPIDController m_controller =
