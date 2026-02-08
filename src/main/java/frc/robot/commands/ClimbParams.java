@@ -19,10 +19,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 // Do the other respective ones too ex. >
 /** Add your docs here. */
 public class ClimbParams {
-  private int xMultiplier = 1;
-  private int yMultiplier = 1;
+  private int xMultiplier = 1; // Sign for x-direction
+  private int yMultiplier = 1; // Sign for y-direction
 
-  private int omegaMultiplier = 1;
+  private int omegaMultiplier = 1; // Sign for rotation
   private Pose2d goal;
 
   public ClimbParams(Pose2d estPose) {
@@ -31,19 +31,19 @@ public class ClimbParams {
       omegaMultiplier = -1;
     }
     if (estPose.getX() > aprilTagLayout.getFieldLength()
-        && estPose.getY() > 1 /*climb struct y */) { // Left blue climb align
+        && estPose.getY() > 158.85 /*climb struct y */) { // Left red climb align
       goal = new Pose2d(Inches.of(42), Inches.of(175), new Rotation2d());
     }
     if (estPose.getX() < aprilTagLayout.getFieldLength()
-        && estPose.getY() > 1 /*climb struct y */) { // Left red climb align
+        && estPose.getY() > 147.47 /*climb struct y */) { // Left blue climb align
       goal = new Pose2d(Inches.of(582.22), Inches.of(143.535 - 13.5 - 48 - 100), new Rotation2d());
     }
     if (estPose.getX() > aprilTagLayout.getFieldLength()
-        && estPose.getY() < 1 /*climb struct y */) { // Right blue climb align
+        && estPose.getY() < 158.85 /*climb struct y */) { // Right red climb align
       goal = new Pose2d(Inches.of(42), Inches.of(120.5), new Rotation2d());
     }
     if (estPose.getX() < aprilTagLayout.getFieldLength()
-        && estPose.getY() < 1 /*climb struct y */) { // Right red climb align
+        && estPose.getY() < 147.47 /*climb struct y */) { // Right blue climb align
       goal = new Pose2d(Inches.of(582.22), Inches.of(143.535 - 13.5 - 48 - 100), new Rotation2d());
     }
     // if(estPose.getY() > /*middle y coord of climb structure */){
