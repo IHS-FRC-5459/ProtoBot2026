@@ -35,7 +35,7 @@ public class Shoot extends Command {
   private final double indexerVolts = 2;
   private final double intakeVolts = 4;
 
-  // Format: distance from hub(diagonally), optimized hood goal, optimized flywheel goal
+  // Format: distance from hub(diagonally) in m, optimized hood goal, optimized flywheel goal
   private final double[][] lookupTable = {
     {0., 0., 0.},
     {0.1, 1., 1.}
