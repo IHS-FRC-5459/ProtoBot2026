@@ -103,6 +103,7 @@ public class DistanceCaching extends SubsystemBase {
     Logger.recordOutput("distance/right" + direction, getRightFiltered());
     Logger.recordOutput("distance/avg" + direction, getXDistance());
     Logger.recordOutput("distance/getSampletimeleft", left.getSampleTime());
-    Logger.recordOutput("distance/isleftvalid", leftMeasurementsValid());
+    Logger.recordOutput("distance/isleftvalid" + direction, leftMeasurementsValid());
+    Logger.recordOutput("distance/isrightvalid" + direction, rightMeasurementsValid());
   }
 }

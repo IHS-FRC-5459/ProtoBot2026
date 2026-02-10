@@ -12,6 +12,7 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.DistanceCaching;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.DoubleSupplier;
@@ -20,12 +21,14 @@ import org.littletonrobotics.junction.Logger;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ClimbAlign extends Command {
   Drive s_drive;
+  RobotContainer m_robotContainer;
   /** Creates a new Climb. */
   // Climbs the right side of the climb structure(from the perspective of the alliance station)
-  public ClimbAlign(Drive s_drive) {
+  public ClimbAlign(Drive s_drive, RobotContainer m_robotContainer) {
     // Use addRequirements() here to declare subsystem dependencies.
     // addRequirements(s_drive);
     this.s_drive = s_drive;
+    this.m_robotContainer = m_robotContainer;
   }
 
   // Called when the command is initially scheduled.
@@ -50,8 +53,10 @@ public class ClimbAlign extends Command {
   @Override
   public void execute() {
     Pose2d currPose = s_drive.getPose();
-    ClimbParams climbParams = new ClimbParams(currPose);
+    ClimbParams climbParams = new ClimbParams(currPose, m_robotContainer);
     DistanceCaching distCache = climbParams.getDistCache();
+    Logger.recordOutput("goal", climbParams.getGoal());
+    Logger.recordOutput("leftfiltered", distCache.getLeftFiltered());
     // want to go to to make sure we are going in with good alignment
     // Blue alliance
 
@@ -65,6 +70,7 @@ public class ClimbAlign extends Command {
     double xDist = 0;
     DoubleSupplier turnCommandSupplier = () -> 0;
     if (distCache.bothValid()) {
+      Logger.recordOutput("both valid", 2);
       xDist = distCache.getXDistance();
       numValidRangeMeasurements = 2;
       double rangeDiff = distCache.getDifference();
@@ -84,6 +90,7 @@ public class ClimbAlign extends Command {
                   * deltaSign2
                   * climbParams.getOmegaMultiplier();
     } else {
+      Logger.recordOutput("both valid", 1);
       shouldTurn = false;
       if (distCache.rightMeasurementsValid()) {
         xDist = distCache.getRightFiltered();
@@ -92,12 +99,13 @@ public class ClimbAlign extends Command {
         xDist = distCache.getLeftFiltered();
         numValidRangeMeasurements = 1;
       } else {
+        Logger.recordOutput("both valid", 0);
         numValidRangeMeasurements = 0;
       }
     }
     DoubleSupplier xSupplier;
     if (numValidRangeMeasurements == 2 || numValidRangeMeasurements == 1) {
-      double x = (xDist - climbPose.getX()) * directionMult;
+      double x = (xDist - climbPose.getX());
       int xSign = 1;
       if (x < 0) {
         xSign = -1;

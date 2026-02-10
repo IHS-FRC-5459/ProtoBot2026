@@ -117,6 +117,9 @@ public class Robot extends LoggedRobot {
 
     // Return to non-RT thread priority (do not modify the first argument)
     // Threads.setCurrentThreadPriority(false, 10);
+    // ClimbParams params = new ClimbParams(new Pose2d(0, 0, new Rotation2d()));
+    // Logger.recordOutput("testt/pose", params.getGoal());
+    // System.out.println("Testing");
   }
 
   /** This function is called once when the robot is disabled. */

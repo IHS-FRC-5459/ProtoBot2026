@@ -10,7 +10,9 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.DistanceCaching;
+import org.littletonrobotics.junction.Logger;
 
 // pose's x < half field
 // then climb goal's y is set to blue alliance goal's y
@@ -27,56 +29,45 @@ public class ClimbParams {
   private int omegaMultiplier = 1; // Sign for rotation
   private Pose2d goal;
   private DistanceCaching distCache;
+  private RobotContainer m_robotContainer;
 
-  public ClimbParams(Pose2d estPose) {
-    if (estPose.getX() > aprilTagLayout.getFieldLength() / 2) {
+  public ClimbParams(Pose2d estPose, RobotContainer m_robotContainer) {
+    this.m_robotContainer = m_robotContainer;
+    if (estPose.getX() < aprilTagLayout.getFieldLength() / 2) {
+      omegaMultiplier = 1;
       xMultiplier = -1;
-      omegaMultiplier = -1;
-    } else {
       yMultiplier = -1;
+    } else {
+      yMultiplier = 1;
     }
-    if (estPose.getX() >= aprilTagLayout.getFieldLength()
+    if (estPose.getX() >= aprilTagLayout.getFieldLength() / 2
         && estPose.getY()
-            >= 158.85 /*climb struct y */) { // Left red climb align (from looking from blue
+            >= 4.318 /*climb struct y */) { // Left red climb align (from looking from blue
       // alliance
       // wall)
-      goal = new Pose2d(Inches.of(42), Inches.of(175), new Rotation2d());
-      distCache =
-          new DistanceCaching(
-              Sensors.Distance.backLeftId,
-              Sensors.Distance.backRightId,
-              Sensors.Distance.xRobotOffsetBack,
-              "back");
+      Logger.recordOutput("testt/condition", 1);
+      goal = new Pose2d(Inches.of(610), Inches.of(205), new Rotation2d());
+      distCache = m_robotContainer.getDistanceCacheFront();
     }
-    if (estPose.getX() <= aprilTagLayout.getFieldLength()
-        && estPose.getY() >= 147.47 /*climb struct y */) { // Left blue climb align
-      goal = new Pose2d(Inches.of(582.22), Inches.of(143.535 - 13.5 - 48 - 100), new Rotation2d());
-      distCache =
-          new DistanceCaching(
-              Sensors.Distance.frontLeftId,
-              Sensors.Distance.frontRightId,
-              Sensors.Distance.xRobotOffsetFront,
-              "front");
+    if (estPose.getX() <= aprilTagLayout.getFieldLength() / 2
+        && estPose.getY() >= 3.75285 /*climb struct y */) { // Left blue climb align
+      Logger.recordOutput("testt/condition", 2);
+      goal = new Pose2d(Inches.of(42), Inches.of(182), new Rotation2d());
+      distCache = m_robotContainer.getDistanceCacheFront();
     }
-    if (estPose.getX() >= aprilTagLayout.getFieldLength()
-        && estPose.getY() <= 158.85 /*climb struct y */) { // Right red climb align
-      goal = new Pose2d(Inches.of(42), Inches.of(120.5), new Rotation2d());
-      distCache =
-          new DistanceCaching(
-              Sensors.Distance.frontLeftId,
-              Sensors.Distance.frontRightId,
-              Sensors.Distance.xRobotOffsetFront,
-              "front");
+    if (estPose.getX() >= aprilTagLayout.getFieldLength() / 2
+        && estPose.getY() <= 4.318 /*climb struct y */) { // Right red climb align
+      Logger.recordOutput("testt/condition", 3);
+
+      goal = new Pose2d(Inches.of(610), Inches.of(135), new Rotation2d());
+      distCache = m_robotContainer.getDistanceCacheFront();
     }
-    if (estPose.getX() <= aprilTagLayout.getFieldLength()
-        && estPose.getY() <= 147.47 /*climb struct y */) { // Right blue climb align
-      goal = new Pose2d(Inches.of(582.22), Inches.of(143.535 - 13.5 - 48 - 100), new Rotation2d());
-      distCache =
-          new DistanceCaching(
-              Sensors.Distance.backLeftId,
-              Sensors.Distance.backRightId,
-              Sensors.Distance.xRobotOffsetBack,
-              "back");
+    if (estPose.getX() <= aprilTagLayout.getFieldLength() / 2
+        && estPose.getY() <= 3.75285 /*climb struct y */) { // Right blue climb align
+      Logger.recordOutput("testt/condition", 4);
+
+      goal = new Pose2d(Inches.of(42), Inches.of(113.5), new Rotation2d());
+      distCache = m_robotContainer.getDistanceCacheBack();
     }
     // if(estPose.getY() > /*middle y coord of climb structure */){
     //

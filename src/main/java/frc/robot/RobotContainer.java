@@ -279,7 +279,7 @@ public class RobotContainer {
         .rightTrigger(0.2)
         .whileTrue(
             new ShootAlign(drive, s_led, () -> -driver.getLeftY(), () -> -driver.getLeftX()));
-    driver.rightBumper().whileTrue(new ClimbAlign(drive));
+    driver.rightBumper().whileTrue(new ClimbAlign(drive, this));
     driver.leftTrigger(0.2).whileTrue(new PassAlign(s_led, drive));
     operator.rightBumper().whileTrue(new ElevatorDown(s_led, s_climb));
     operator.leftBumper().whileTrue(new ElevatorUp(s_led, s_climb));
@@ -293,6 +293,14 @@ public class RobotContainer {
         .whileTrue(
             new PassShoot(s_led, s_flywheel, s_indexer, s_belt, s_intake, s_pivot, s_hood, drive));
     operator.x().whileTrue(new RunIntake(s_led, s_intake));
+  }
+
+  public DistanceCaching getDistanceCacheFront() {
+    return this.distanceCacheFront;
+  }
+
+  public DistanceCaching getDistanceCacheBack() {
+    return this.distanceCacheBack;
   }
 
   /**
