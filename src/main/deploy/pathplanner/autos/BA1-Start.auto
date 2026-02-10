@@ -7,19 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "BA-start"
+            "pathName": "BA1-start"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 1.5
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "BA-PT2"
+            "pathName": "BA1-PT2"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
           }
         },
         {

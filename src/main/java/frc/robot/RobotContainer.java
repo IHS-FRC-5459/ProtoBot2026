@@ -227,6 +227,7 @@ public class RobotContainer {
             () -> {
               System.out.println("hi");
             }));
+    NamedCommands.registerCommand("climbAlign", new ClimbAlign(drive, this));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
