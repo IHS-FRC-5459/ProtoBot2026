@@ -24,7 +24,7 @@ import org.littletonrobotics.junction.Logger;
 /** Add your docs here. */
 public class ClimbParams {
   private int xMultiplier = 1; // Sign for x-direction
-  private int yMultiplier = 1; // Sign for y-direction
+  private int yMultiplier = -1; // Sign for y-direction
 
   private int omegaMultiplier = 1; // Sign for rotation
   private Pose2d goal;
@@ -37,8 +37,6 @@ public class ClimbParams {
       omegaMultiplier = 1;
       xMultiplier = -1;
       yMultiplier = -1;
-    } else {
-      yMultiplier = 1;
     }
     if (estPose.getX() >= aprilTagLayout.getFieldLength() / 2
         && estPose.getY()
@@ -46,7 +44,7 @@ public class ClimbParams {
       // alliance
       // wall)
       Logger.recordOutput("testt/condition", 1);
-      goal = new Pose2d(Inches.of(610), Inches.of(205), new Rotation2d());
+      goal = new Pose2d(Inches.of(42), Inches.of(205), new Rotation2d());
       distCache = m_robotContainer.getDistanceCacheFront();
     }
     if (estPose.getX() <= aprilTagLayout.getFieldLength() / 2
@@ -59,7 +57,7 @@ public class ClimbParams {
         && estPose.getY() <= 4.318 /*climb struct y */) { // Right red climb align
       Logger.recordOutput("testt/condition", 3);
 
-      goal = new Pose2d(Inches.of(610), Inches.of(135), new Rotation2d());
+      goal = new Pose2d(Inches.of(42), Inches.of(135), new Rotation2d());
       distCache = m_robotContainer.getDistanceCacheFront();
     }
     if (estPose.getX() <= aprilTagLayout.getFieldLength() / 2
