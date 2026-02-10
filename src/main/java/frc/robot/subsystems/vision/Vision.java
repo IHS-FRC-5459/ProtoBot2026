@@ -40,7 +40,7 @@ public class Vision extends SubsystemBase {
     this.io = io;
     if (!Robot.isSimulation()) {
       try {
-        Path path = Paths.get("/home/lvuser/deploy/field.json");
+        Path path = Paths.get("/home/lvuser/deploy/rotatedField.json");
         if (Files.exists(path)) {
           aprilTagLayout = new AprilTagFieldLayout(path);
         } else {

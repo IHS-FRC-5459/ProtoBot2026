@@ -17,6 +17,7 @@ public class VisionConstants {
   // AprilTag layout
   public static AprilTagFieldLayout aprilTagLayout =
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+    //This gets overridden in Vision.java
 
   // Camera names, must match names configured on coprocessor
   public static String camera0Name = "frontleft";
