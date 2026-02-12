@@ -50,7 +50,7 @@ public class ClimbParams {
     if (estPose.getX() <= aprilTagLayout.getFieldLength() / 2
         && estPose.getY() >= 3.75285 /*climb struct y */) { // Left blue climb align
       Logger.recordOutput("testt/condition", 2);
-      goal = new Pose2d(Inches.of(42), Inches.of(182), new Rotation2d());
+      goal = new Pose2d(Inches.of(42), Inches.of(177), new Rotation2d());
       distCache = m_robotContainer.getDistanceCacheFront();
     }
     if (estPose.getX() >= aprilTagLayout.getFieldLength() / 2
@@ -64,7 +64,7 @@ public class ClimbParams {
         && estPose.getY() <= 3.75285 /*climb struct y */) { // Right blue climb align
       Logger.recordOutput("testt/condition", 4);
 
-      goal = new Pose2d(Inches.of(42), Inches.of(130), new Rotation2d());
+      goal = new Pose2d(Inches.of(42), Inches.of(117), new Rotation2d());
       distCache = m_robotContainer.getDistanceCacheBack();
     }
     // if(estPose.getY() > /*middle y coord of climb structure */){
