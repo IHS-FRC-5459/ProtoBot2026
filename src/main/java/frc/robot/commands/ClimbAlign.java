@@ -53,8 +53,12 @@ public class ClimbAlign extends Command {
   @Override
   public void execute() {
     Pose2d currPose = s_drive.getPose();
-    ClimbParams climbParams = new ClimbParams(currPose, m_robotContainer);
-    DistanceCaching distCache = climbParams.getDistCache();
+    ClimbParams climbParams = new ClimbParams(currPose);
+    // DistanceCaching distCache = climbParams.getDistCache();
+    DistanceCaching distCache = m_robotContainer.getDistanceCacheBack();
+    if (climbParams.getIsFront()) {
+      distCache = m_robotContainer.getDistanceCacheFront();
+    }
     Logger.recordOutput("goal", climbParams.getGoal());
     Logger.recordOutput("leftfiltered", distCache.getLeftFiltered());
     // want to go to to make sure we are going in with good alignment
