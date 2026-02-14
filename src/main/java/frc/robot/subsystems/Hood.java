@@ -6,16 +6,17 @@ package frc.robot.subsystems;
 
 import static frc.robot.Constants.*;
 
-import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Motors;
 
 public class Hood extends SubsystemBase {
-  private TalonFX motor;
+  private SparkMax motor;
   private double goal;
 
   public Hood() {
-    motor = new TalonFX(Motors.hoodId, canbus);
+    motor = new SparkMax(Motors.hoodId, MotorType.kBrushless);
   }
 
   public void setGoal(double goal) {

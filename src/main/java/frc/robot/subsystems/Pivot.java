@@ -10,8 +10,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.Motors;
-import frc.robot.Constants.Sensors;
 
 // Just simple constant controller
 public class Pivot extends SubsystemBase {

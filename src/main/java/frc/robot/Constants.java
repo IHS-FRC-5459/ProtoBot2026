@@ -85,6 +85,8 @@ public final class Constants {
     public static final int intakeId = 15;
     public static final int indexId = 14;
     public static final int flywheelId = 16;
+    public static final int flywheelId2 = 29;
+
     public static final int pivotId = 18;
     public static final int beltId = 19;
     public static final int climbRightId = 17;

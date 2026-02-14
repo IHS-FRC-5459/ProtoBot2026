@@ -36,6 +36,7 @@ import frc.robot.commands.RunIntake;
 import frc.robot.commands.Shoot;
 // import frc.robot.commands.ClimbRight;
 import frc.robot.commands.ShootAlign;
+import frc.robot.commands.TestShoot;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Belt;
 import frc.robot.subsystems.Climb;
@@ -294,6 +295,7 @@ public class RobotContainer {
         .whileTrue(
             new PassShoot(s_led, s_flywheel, s_indexer, s_belt, s_intake, s_pivot, s_hood, drive));
     operator.x().whileTrue(new RunIntake(s_led, s_intake));
+    operator.a().whileTrue(new TestShoot(s_flywheel));
   }
 
   public DistanceCaching getDistanceCacheFront() {
