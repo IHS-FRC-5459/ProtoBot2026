@@ -50,7 +50,7 @@ public class ClimbParams {
     if (estPose.getX() <= aprilTagLayout.getFieldLength() / 2
         && estPose.getY() >= 3.75285 /*climb struct y */) { // Left blue climb align
       Logger.recordOutput("testt/condition", 2);
-      goal = new Pose2d(Inches.of(42), Inches.of(177), new Rotation2d());
+      goal = new Pose2d(Inches.of(42), Inches.of(187), new Rotation2d());
       distCache = m_robotContainer.getDistanceCacheFront();
     }
     if (estPose.getX() >= aprilTagLayout.getFieldLength() / 2
