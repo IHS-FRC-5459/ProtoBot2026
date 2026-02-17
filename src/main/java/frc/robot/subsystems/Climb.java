@@ -36,7 +36,8 @@ public class Climb extends SubsystemBase {
   private final ProfiledPIDController m_controller =
       new ProfiledPIDController(kP, kI, kD, m_constraints, kDt);
   private final ElevatorFeedforward m_feedforward = new ElevatorFeedforward(kS, kG, kV);
-
+  private DistanceCaching distanceCacheFront, distanceCacheBack;
+  private DistanceSide distanceCacheSide;
   private final String loggingPrefix = "subsystems/climb/";
   /** Creates a new Climb. */
   public Climb() {
@@ -46,6 +47,19 @@ public class Climb extends SubsystemBase {
     m_encoder = new Encoder(Ports.ElevatorEncoderPort1, Ports.ElevatorEncoderPort2);
     m_encoder.setDistancePerPulse(1.0 / 360.0 * 2.0 * Math.PI * 1.5);
     resetEncoder();
+    distanceCacheFront =
+        new DistanceCaching(
+            Sensors.Distance.frontLeftId,
+            Sensors.Distance.frontRightId,
+            Sensors.Distance.xRobotOffsetFront,
+            "front");
+    distanceCacheBack =
+        new DistanceCaching(
+            Sensors.Distance.backLeftId,
+            Sensors.Distance.backRightId,
+            Sensors.Distance.xRobotOffsetBack,
+            "back");
+    distanceCacheSide = new DistanceSide();
   }
 
   public double getEncoderDistance() {
@@ -79,6 +93,18 @@ public class Climb extends SubsystemBase {
   public void setGrab(double volts) {
     grab.setVoltage(volts);
     Logger.recordOutput(loggingPrefix + "grabVolts", volts);
+  }
+
+  public DistanceCaching getDistanceCacheFront() {
+    return this.distanceCacheFront;
+  }
+
+  public DistanceCaching getDistanceCacheBack() {
+    return this.distanceCacheBack;
+  }
+
+  public DistanceSide getDistanceSide() {
+    return this.distanceCacheSide;
   }
 
   boolean hasStoppedGrabber = false;

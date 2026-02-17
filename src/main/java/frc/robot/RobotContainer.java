@@ -36,12 +36,9 @@ import frc.robot.commands.RunIntake;
 import frc.robot.commands.Shoot;
 // import frc.robot.commands.ClimbRight;
 import frc.robot.commands.ShootAlign;
-import frc.robot.commands.TestShoot;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Belt;
 import frc.robot.subsystems.Climb;
-import frc.robot.subsystems.DistanceCaching;
-import frc.robot.subsystems.DistanceSide;
 import frc.robot.subsystems.Flywheel;
 import frc.robot.subsystems.Hood;
 import frc.robot.subsystems.Indexer;
@@ -82,9 +79,6 @@ public class RobotContainer {
   private Vision vision;
   // Sensors
   private Pigeon2 pigeon;
-  private final DistanceCaching distanceCacheFront;
-  private final DistanceCaching distanceCacheBack;
-  private final DistanceSide distanceSide;
   private CANdle candle;
   // controller
   private final CommandXboxController driver = new CommandXboxController(0);
@@ -121,19 +115,6 @@ public class RobotContainer {
         s_flywheel = new Flywheel();
         s_hood = new Hood();
         s_belt = new Belt();
-        distanceSide = new DistanceSide();
-        distanceCacheFront =
-            new DistanceCaching(
-                Constants.Sensors.Distance.frontLeftId,
-                Constants.Sensors.Distance.frontRightId,
-                Constants.Sensors.Distance.xRobotOffsetFront,
-                "front");
-        distanceCacheBack =
-            new DistanceCaching(
-                Constants.Sensors.Distance.backLeftId,
-                Constants.Sensors.Distance.backRightId,
-                Constants.Sensors.Distance.xRobotOffsetBack,
-                "back");
 
         // vision = new Vision(Constants.Vision.cameraNames, pigeon, drive);
         break;
@@ -165,19 +146,6 @@ public class RobotContainer {
         s_flywheel = new Flywheel();
         s_hood = new Hood();
         s_belt = new Belt();
-        distanceSide = new DistanceSide();
-        distanceCacheFront =
-            new DistanceCaching(
-                Constants.Sensors.Distance.frontLeftId,
-                Constants.Sensors.Distance.frontRightId,
-                Constants.Sensors.Distance.xRobotOffsetFront,
-                "front");
-        distanceCacheBack =
-            new DistanceCaching(
-                Constants.Sensors.Distance.backLeftId,
-                Constants.Sensors.Distance.backRightId,
-                Constants.Sensors.Distance.xRobotOffsetBack,
-                "back");
 
         break;
 
@@ -207,19 +175,6 @@ public class RobotContainer {
         s_flywheel = new Flywheel();
         s_hood = new Hood();
         s_belt = new Belt();
-        distanceSide = new DistanceSide();
-        distanceCacheFront =
-            new DistanceCaching(
-                Constants.Sensors.Distance.frontLeftId,
-                Constants.Sensors.Distance.frontRightId,
-                Constants.Sensors.Distance.xRobotOffsetFront,
-                "front");
-        distanceCacheBack =
-            new DistanceCaching(
-                Constants.Sensors.Distance.backLeftId,
-                Constants.Sensors.Distance.backRightId,
-                Constants.Sensors.Distance.xRobotOffsetBack,
-                "back");
         break;
     }
     NamedCommands.registerCommand(
@@ -228,7 +183,7 @@ public class RobotContainer {
             () -> {
               System.out.println("hi");
             }));
-    NamedCommands.registerCommand("climbAlign", new ClimbAlign(drive, this));
+    NamedCommands.registerCommand("climbAlign", new ClimbAlign(drive, s_climb));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -281,7 +236,7 @@ public class RobotContainer {
         .rightTrigger(0.2)
         .whileTrue(
             new ShootAlign(drive, s_led, () -> -driver.getLeftY(), () -> -driver.getLeftX()));
-    driver.rightBumper().whileTrue(new ClimbAlign(drive, this));
+    driver.rightBumper().whileTrue(new ClimbAlign(drive, s_climb));
     driver.leftTrigger(0.2).whileTrue(new PassAlign(s_led, drive));
     operator.rightBumper().whileTrue(new ElevatorDown(s_led, s_climb));
     operator.leftBumper().whileTrue(new ElevatorUp(s_led, s_climb));
@@ -295,15 +250,12 @@ public class RobotContainer {
         .whileTrue(
             new PassShoot(s_led, s_flywheel, s_indexer, s_belt, s_intake, s_pivot, s_hood, drive));
     operator.x().whileTrue(new RunIntake(s_led, s_intake));
-    operator.a().whileTrue(new TestShoot(s_flywheel));
-  }
-
-  public DistanceCaching getDistanceCacheFront() {
-    return this.distanceCacheFront;
-  }
-
-  public DistanceCaching getDistanceCacheBack() {
-    return this.distanceCacheBack;
+    operator.a().onTrue(new InstantCommand(() -> s_led.setIsAngry(true)));
+    operator.a().onFalse(new InstantCommand(() -> s_led.setIsAngry(false)));
+    operator.y().onTrue(new InstantCommand(() -> s_led.setIsHappy(true)));
+    operator.y().onFalse(new InstantCommand(() -> s_led.setIsHappy(false)));
+    operator.back().onTrue(new InstantCommand(() -> s_led.setIsRainbow(true)));
+    operator.back().onFalse(new InstantCommand(() -> s_led.setIsRainbow(false)));
   }
 
   /**

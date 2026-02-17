@@ -12,7 +12,7 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.RobotContainer;
+import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.DistanceCaching;
 import frc.robot.subsystems.DistanceSide;
 import frc.robot.subsystems.drive.Drive;
@@ -22,16 +22,16 @@ import org.littletonrobotics.junction.Logger;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ClimbAlign extends Command {
   Drive s_drive;
-  RobotContainer m_robotContainer;
+  Climb s_climb;
   DistanceSide sideDistCache;
   /** Creates a new Climb. */
   // Climbs the right side of the climb structure(from the perspective of the alliance station)
-  public ClimbAlign(Drive s_drive, RobotContainer m_robotContainer) {
+  public ClimbAlign(Drive s_drive, Climb s_climb) {
     // Use addRequirements() here to declare subsystem dependencies.
     // addRequirements(s_drive);
     this.s_drive = s_drive;
-    this.m_robotContainer = m_robotContainer;
-    this.sideDistCache = new DistanceSide();
+    this.s_climb = s_climb;
+    this.sideDistCache = s_climb.getDistanceSide();
   }
 
   // Called when the command is initially scheduled.
@@ -58,9 +58,9 @@ public class ClimbAlign extends Command {
     Pose2d currPose = s_drive.getPose();
     ClimbParams climbParams = new ClimbParams(currPose);
     // DistanceCaching distCache = climbParams.getDistCache();
-    DistanceCaching distCache = m_robotContainer.getDistanceCacheBack();
+    DistanceCaching distCache = s_climb.getDistanceCacheBack();
     if (climbParams.getIsFront()) {
-      distCache = m_robotContainer.getDistanceCacheFront();
+      distCache = s_climb.getDistanceCacheFront();
     }
     Logger.recordOutput("goal", climbParams.getGoal());
     Logger.recordOutput("leftfiltered", distCache.getLeftFiltered());
@@ -132,7 +132,7 @@ public class ClimbAlign extends Command {
     }
     // Works for both alliances
     // Y
-    double deltaY = sideDistCache.getDistanceFiltered() * -directionMult; // .4064=16in to m
+    double deltaY = (currPose.getY() - climbPose.getY()) * -directionMult; // .4064=16in to m
     DoubleSupplier ySupplier = () -> MathUtil.clamp(-deltaY, -1, 1) * climbParams.getYMultiplier();
     // omegaPassed = omegaPassed && time < 100; // bad practice, but its fine :)
     joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, turnCommandSupplier, shouldTurn);
