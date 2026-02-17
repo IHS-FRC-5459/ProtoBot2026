@@ -17,7 +17,6 @@ public class DistanceSide extends SubsystemBase {
   Queue<Double> queue = new LinkedList<>();
   private final int queueSize = 5;
   int sensorId;
-  double offset;
   private String loggingPrefix = "subsystems/distanceCaching/side/";
   /** Creates a new DistanceCaching. */
   // offset is the always posotive x translation of the distance sensors to the centerline (x=0
@@ -25,6 +24,10 @@ public class DistanceSide extends SubsystemBase {
   public DistanceSide() {
     sensor = new TimeOfFlight(Constants.Sensors.Distance.climbSideId);
     sensor.setRangingMode(RangingMode.Short, 24);
+  }
+
+  public double getYDistance() {
+    return getDistanceFiltered() + Constants.Sensors.Distance.yRobotOffsetSide;
   }
 
   public double getDistanceFiltered() {

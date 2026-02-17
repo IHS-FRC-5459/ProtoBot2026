@@ -17,7 +17,7 @@ public class LED extends SubsystemBase {
   private final int framerate = 20;
   private final int rainbowFramerate = 100;
   private final int startIndex = 0;
-  private final int endIndex = 100;
+  private final int endIndex = 53 + 8; // 8 is from the 8 on the candle itself
   // status booleans
   private boolean intaking,
       shooting,
@@ -133,9 +133,10 @@ public class LED extends SubsystemBase {
       Logger.recordOutput(loggingPrefix + "led", "rainbow");
       Logger.recordOutput(loggingPrefix + "state", "rainbow");
     } else {
-      setLEDs(Colors.blank);
+      // setLEDs(Colors.blank);
       Logger.recordOutput(loggingPrefix + "led", "blank");
       Logger.recordOutput(loggingPrefix + "state", "nothing");
+      doRainbow();
     }
   }
 

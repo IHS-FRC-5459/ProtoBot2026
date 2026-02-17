@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.DistanceCaching;
+import frc.robot.subsystems.DistanceSide;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -22,6 +23,7 @@ import org.littletonrobotics.junction.Logger;
 public class ClimbAlign extends Command {
   Drive s_drive;
   RobotContainer m_robotContainer;
+  DistanceSide sideDistCache;
   /** Creates a new Climb. */
   // Climbs the right side of the climb structure(from the perspective of the alliance station)
   public ClimbAlign(Drive s_drive, RobotContainer m_robotContainer) {
@@ -29,6 +31,7 @@ public class ClimbAlign extends Command {
     // addRequirements(s_drive);
     this.s_drive = s_drive;
     this.m_robotContainer = m_robotContainer;
+    this.sideDistCache = new DistanceSide();
   }
 
   // Called when the command is initially scheduled.
@@ -74,7 +77,7 @@ public class ClimbAlign extends Command {
     double xDist = 0;
     DoubleSupplier turnCommandSupplier = () -> 0;
     if (distCache.bothValid()) {
-      Logger.recordOutput("both valid", 2);
+      Logger.recordOutput("bothvalid", 2);
       xDist = distCache.getXDistance();
       numValidRangeMeasurements = 2;
       double rangeDiff = distCache.getDifference();
@@ -86,15 +89,15 @@ public class ClimbAlign extends Command {
       double deltaSign2 = deltaSign;
       double rangeDiff2 = rangeDiff;
       Logger.recordOutput("rangeDiff", rangeDiff);
-      Logger.recordOutput("Left valid", distCache.leftMeasurementsValid());
-      Logger.recordOutput("right valid", distCache.rightMeasurementsValid());
+      Logger.recordOutput("Leftvalid", distCache.leftMeasurementsValid());
+      Logger.recordOutput("rightvalid", distCache.rightMeasurementsValid());
       turnCommandSupplier =
           () ->
               MathUtil.clamp(Math.abs(rangeDiff2), 0.23, 0.7)
                   * deltaSign2
                   * climbParams.getOmegaMultiplier();
     } else {
-      Logger.recordOutput("both valid", 1);
+      Logger.recordOutput("bothvalid", 1);
       shouldTurn = false;
       if (distCache.rightMeasurementsValid()) {
         xDist = distCache.getRightFiltered();
@@ -103,7 +106,7 @@ public class ClimbAlign extends Command {
         xDist = distCache.getLeftFiltered();
         numValidRangeMeasurements = 1;
       } else {
-        Logger.recordOutput("both valid", 0);
+        Logger.recordOutput("bothvalid", 0);
         numValidRangeMeasurements = 0;
       }
     }
@@ -129,7 +132,7 @@ public class ClimbAlign extends Command {
     }
     // Works for both alliances
     // Y
-    double deltaY = (currPose.getY() - climbPose.getY()) * -directionMult; // .4064=16in to m
+    double deltaY = sideDistCache.getDistanceFiltered() * -directionMult; // .4064=16in to m
     DoubleSupplier ySupplier = () -> MathUtil.clamp(-deltaY, -1, 1) * climbParams.getYMultiplier();
     // omegaPassed = omegaPassed && time < 100; // bad practice, but its fine :)
     joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, turnCommandSupplier, shouldTurn);

@@ -24,7 +24,7 @@ public class DistanceCaching extends SubsystemBase {
   // offset is the always posotive x translation of the distance sensors to the centerline (x=0
   // line)
   public DistanceCaching(int leftId, int rightId, double offset, String direction) {
-    loggingPrefix = "subsystems/distanceCaching/" + direction;
+    loggingPrefix = "subsystems/distanceCaching/" + direction + "/";
     left = new TimeOfFlight(leftId);
     right = new TimeOfFlight(rightId);
     left.setRangingMode(RangingMode.Short, 24);
