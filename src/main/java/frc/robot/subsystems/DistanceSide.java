@@ -5,52 +5,59 @@
 package frc.robot.subsystems;
 
 import com.playingwithfusion.TimeOfFlight;
+import com.playingwithfusion.TimeOfFlight.RangingMode;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.Sensors.Distance;
+import frc.robot.Constants;
 import java.util.LinkedList;
 import java.util.Queue;
 import org.littletonrobotics.junction.Logger;
 
 public class DistanceSide extends SubsystemBase {
+  TimeOfFlight sensor;
   Queue<Double> queue = new LinkedList<>();
-  int badNum = 0;
-  private final int queueSize = 18;
-  private final int maxBadMeasurements = 20;
-  private TimeOfFlight sensor;
-  /** Creates a new DistanceSide. */
+  private final int queueSize = 5;
+  int sensorId;
+  double offset;
+  private String loggingPrefix = "subsystems/distanceCaching/side/";
+  /** Creates a new DistanceCaching. */
+  // offset is the always posotive x translation of the distance sensors to the centerline (x=0
+  // line)
   public DistanceSide() {
-    sensor = new TimeOfFlight(Distance.climbSideId);
+    sensor = new TimeOfFlight(Constants.Sensors.Distance.climbSideId);
+    sensor.setRangingMode(RangingMode.Short, 24);
   }
 
-  public double get() {
-    double total = 0;
+  public double getDistanceFiltered() {
+    double sumOfDistanceMeasurements = 0;
     int numZeroes = 0;
-    for (double d : queue) {
-      total += d;
-      if (d == 0) {
-        badNum++;
+    for (double distanceMeasurement : queue) {
+      sumOfDistanceMeasurements += distanceMeasurement;
+      if (distanceMeasurement == 0) {
         numZeroes++;
-      } else {
-        badNum = 0;
       }
     }
-    if (total == 0) {
+    if (sumOfDistanceMeasurements == 0) {
       return -1;
     }
-    return (total / (queue.size() - numZeroes)) / 1000;
+    return (sumOfDistanceMeasurements / (queue.size() - numZeroes)) / 1000;
   }
 
-  public boolean isValid() {
-    return badNum <= maxBadMeasurements;
+  public boolean measurementsValid() {
+    return getDistanceFiltered() != -1;
   }
 
   @Override
   public void periodic() {
-    queue.add(sensor.getRange());
+
+    // This method will be called once per scheduler run
+    double rawDistance = sensor.getRange();
+    queue.add(rawDistance);
     if (queue.size() > queueSize) {
       queue.remove();
     }
-    Logger.recordOutput("distance/distance side", get());
-    // This method will be called once per scheduler run
+    Logger.recordOutput(loggingPrefix + "rawdistancesdistsensor", rawDistance);
+    Logger.recordOutput(loggingPrefix + "filtered", getDistanceFiltered());
+    Logger.recordOutput(loggingPrefix + "getSampletimeleft", sensor.getSampleTime());
+    Logger.recordOutput(loggingPrefix + "isValid", measurementsValid());
   }
 }

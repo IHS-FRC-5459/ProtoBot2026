@@ -9,16 +9,21 @@ import static frc.robot.Constants.*;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Motors;
+import org.littletonrobotics.junction.Logger;
 
 public class Indexer extends SubsystemBase {
   private TalonFX motor;
+  private double commandedVoltage;
+  private final String loggingPrefix = "subsystems/indexer/";
 
   public Indexer() {
     motor = new TalonFX(Motors.indexId, canbus);
   }
-
+  // Note: This subsystem purposely uses voltage rather than power because that is what it was
+  // commanded by when we made the interpolation tables
   public void setVoltage(double volts) {
     motor.setVoltage(-volts);
+    commandedVoltage = volts;
   }
 
   public double getVoltage() {
@@ -27,6 +32,8 @@ public class Indexer extends SubsystemBase {
 
   @Override
   public void periodic() {
+    Logger.recordOutput(loggingPrefix + "commandedVoltage", commandedVoltage);
+    Logger.recordOutput(loggingPrefix + "actualVoltage", getVoltage());
     // This method will be called once per scheduler run
   }
 }

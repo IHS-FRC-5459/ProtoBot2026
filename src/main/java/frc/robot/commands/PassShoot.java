@@ -28,9 +28,9 @@ public class PassShoot extends Command {
   private Hood s_hood;
   private long lastAgitation;
   private final double agitationIntervalTime = 1000;
-  private final double beltVolts = 2;
+  private final double beltSpeed = 0.7;
   private final double indexerVolts = 2;
-  private final double intakeVolts = 4;
+  private final double intakeSpeed = 0.7;
   private final double hoodGoal = 1;
   private final double flywheelGoal = 2;
   /** Creates a new Outtake. */
@@ -72,8 +72,8 @@ public class PassShoot extends Command {
       lastAgitation = System.currentTimeMillis();
       s_pivot.goOpposite();
     }
-    s_belt.setVoltage(beltVolts);
-    s_intake.setVoltage(intakeVolts);
+    s_belt.setSpeed(beltSpeed);
+    s_intake.setSpeed(intakeSpeed);
     s_indexer.setVoltage(indexerVolts);
     s_hood.setGoal(hoodGoal);
     s_flywheel.setGoal(flywheelGoal);
@@ -83,8 +83,8 @@ public class PassShoot extends Command {
   @Override
   public void end(boolean interrupted) {
     s_pivot.goDown();
-    s_belt.setVoltage(0);
-    s_intake.setVoltage(0);
+    s_belt.setSpeed(0);
+    s_intake.setSpeed(0);
     s_indexer.setVoltage(0);
     s_led.setShooting(false);
     s_flywheel.setGoal(0);

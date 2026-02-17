@@ -9,24 +9,31 @@ import static frc.robot.Constants.*;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Motors;
+import org.littletonrobotics.junction.Logger;
 
 public class Belt extends SubsystemBase {
   private TalonFX motor;
+  private double commandedSpeed = 0;
+  private final String loggingPrefix = "subsystems/belt/";
 
   public Belt() {
     motor = new TalonFX(Motors.beltId, canbus);
   }
 
-  public void setVoltage(double volts) {
-    motor.setVoltage(-volts);
+  public void setSpeed(double power) {
+    motor.set(-power);
+    commandedSpeed = -power;
+    Logger.recordOutput(loggingPrefix + "commandedSpeed", -power);
   }
 
-  public double getVoltage() {
+  public double getSpeed() {
     return -motor.get();
   }
 
   @Override
   public void periodic() {
+    Logger.recordOutput(loggingPrefix + "commandedSpeed", commandedSpeed);
+    Logger.recordOutput(loggingPrefix + "actualSpeed", getSpeed());
     // This method will be called once per scheduler run
   }
 }

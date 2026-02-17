@@ -31,9 +31,9 @@ public class Shoot extends Command {
   private Drive s_drive;
   private long lastAgitation;
   private final double agitationIntervalTime = 1000;
-  private final double beltVolts = 2;
+  private final double beltPower = 2;
   private final double indexerVolts = 2;
-  private final double intakeVolts = 4;
+  private final double intakePower = 4;
 
   // Format: distance from hub(diagonally) in m, optimized hood goal, optimized flywheel goal
   private final double[][] lookupTable = {
@@ -110,8 +110,8 @@ public class Shoot extends Command {
       lastAgitation = System.currentTimeMillis();
       s_pivot.goOpposite();
     }
-    s_belt.setVoltage(beltVolts);
-    s_intake.setVoltage(intakeVolts);
+    s_belt.setSpeed(beltPower);
+    s_intake.setSpeed(intakePower);
     s_indexer.setVoltage(indexerVolts);
   }
 
@@ -119,8 +119,8 @@ public class Shoot extends Command {
   @Override
   public void end(boolean interrupted) {
     s_pivot.goDown();
-    s_belt.setVoltage(0);
-    s_intake.setVoltage(0);
+    s_belt.setSpeed(0);
+    s_intake.setSpeed(0);
     s_indexer.setVoltage(0);
     s_led.setShooting(false);
   }

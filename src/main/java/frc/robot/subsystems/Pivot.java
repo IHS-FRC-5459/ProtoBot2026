@@ -4,80 +4,105 @@
 
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.*;
-
-import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.math.MathUtil;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.Motors;
+import frc.robot.Constants.Sensors.Ports;
+import org.littletonrobotics.junction.Logger;
 
-// Just simple constant controller
 public class Pivot extends SubsystemBase {
-  TalonFX motor;
-  Encoder m_encoder;
-  private double goal;
-  private final double deadspace = 20;
-  private final double upGoal = 0;
-  private final double downGoal = -100;
-  /** Creates a new Pivot. */
+  private final SparkMax pivotController;
+  private final Encoder pivotEncoder;
+  private final ArmFeedforward pivotFeedforward;
+  private final PIDController pivotPID;
+  private double pivotSetpoint = 0;
+  private final double setpointDeadspace = 10;
+  private final double downSetpoint = 0;
+  private final double upSetpoint = 100;
+
+  private final String loggingPrefix = "subsystems/pivot/";
+
   public Pivot() {
-    motor = new TalonFX(Motors.pivotId, canbus);
-    m_encoder = new Encoder(Sensors.Ports.PivotEncoderPort1, Sensors.Ports.PivotEncoderPort2);
-    m_encoder.setDistancePerPulse(1.0 / 360.0 * 2.0 * Math.PI * 1.5);
-    resetEncoder();
+    pivotController = new SparkMax(Motors.pivotId, MotorType.kBrushless);
+    pivotEncoder = new Encoder(Ports.PivotEncoderPort1, Ports.PivotEncoderPort2);
+    pivotFeedforward = new ArmFeedforward(0, 0.4, 0);
+    pivotPID = new PIDController(4, 1, 0.002);
+    pivotEncoder.setDistancePerPulse(0.02);
+    // This happends to be about encoder dist = degrees of pivot
+    pivotEncoder.reset();
   }
 
-  private void updateMotorOutput() {
-    double delta = getEncoder() - goal;
-    if (Math.abs(delta) < deadspace) { // Deadspace
-      return;
-    }
-    if (delta < 0) {
-      setVoltage(MathUtil.clamp(delta, -1, -0.3));
-    } else {
-      setVoltage(MathUtil.clamp(delta, 0.3, 1));
-    }
-  }
-
-  public void setVoltage(double volts) {
-    motor.setVoltage(volts);
-  }
-
-  public double getEncoder() {
-    return -m_encoder.getDistance();
-  }
-
-  private void setGoal(double goal) {
-    this.goal = goal;
+  public void setGoal(double goal) {
+    this.pivotSetpoint = goal;
+    pivotPID.setSetpoint(pivotSetpoint * Math.PI / 180);
   }
 
   public double getGoal() {
-    return this.goal;
+    return this.pivotSetpoint;
   }
 
-  public void resetEncoder() {
-    m_encoder.reset();
+  public void setVoltage(double volts) {
+    pivotController.setVoltage(-volts);
   }
 
-  public void goUp() {
-    setGoal(upGoal);
+  public double getVoltage() {
+    return -pivotController.get();
+  }
+
+  public double getEncoderDist() {
+    return -pivotEncoder.getDistance();
+  }
+
+  public double getEncoderRadians() {
+    return getEncoderDist() * Math.PI / 180;
+  }
+
+  public void updateMotorOutput() {
+    double pidVolts = pivotPID.calculate(getEncoderRadians());
+    double ffVolts = pivotFeedforward.calculate(getEncoderRadians(), pivotEncoder.getRate());
+    double volts = pidVolts + ffVolts;
+    pivotController.setVoltage(volts);
+    Logger.recordOutput(loggingPrefix + "pidVolts: ", pidVolts);
+    Logger.recordOutput(loggingPrefix + "ffVolts ", ffVolts);
+    Logger.recordOutput(loggingPrefix + "volts", volts);
   }
 
   public void goDown() {
-    setGoal(downGoal);
+    setGoal(downSetpoint);
+  }
+
+  public void goUp() {
+    setGoal(upSetpoint);
   }
 
   public void goOpposite() {
-    if (getGoal() == upGoal) {
-      goDown();
-    } else {
-      goUp();
+    if (!isAtSetpoint()) {
+      return;
     }
+    if (getGoal() == downSetpoint) {
+      goUp();
+    } else {
+      goDown();
+    }
+  }
+
+  public boolean
+      isAtSetpoint() { // I putposely don't use the build in function for this because it is too
+    // exact
+    return pivotPID.getError() < setpointDeadspace;
   }
 
   @Override
   public void periodic() {
-    updateMotorOutput();
     // This method will be called once per scheduler run
+    Logger.recordOutput(loggingPrefix + "EncoderReading", getEncoderDist());
+    Logger.recordOutput(loggingPrefix + "goal", getGoal());
+    Logger.recordOutput(loggingPrefix + "isAtSetpoint", isAtSetpoint());
+    Logger.recordOutput(loggingPrefix + "error", pivotPID.getError());
+    updateMotorOutput();
   }
 }

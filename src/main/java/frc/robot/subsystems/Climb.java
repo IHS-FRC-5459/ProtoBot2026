@@ -36,6 +36,8 @@ public class Climb extends SubsystemBase {
   private final ProfiledPIDController m_controller =
       new ProfiledPIDController(kP, kI, kD, m_constraints, kDt);
   private final ElevatorFeedforward m_feedforward = new ElevatorFeedforward(kS, kG, kV);
+
+  private final String loggingPrefix = "subsystems/climb/";
   /** Creates a new Climb. */
   public Climb() {
     left = new TalonFX(Motors.climbLeftId, canbus);
@@ -47,13 +49,13 @@ public class Climb extends SubsystemBase {
   }
 
   public double getEncoderDistance() {
-    Logger.recordOutput("elevator encoder", -m_encoder.getDistance());
+    Logger.recordOutput(loggingPrefix + "encoder", -m_encoder.getDistance());
     return -m_encoder.getDistance();
   }
 
   public void setGoal(double goal) {
     m_controller.setGoal(goal);
-    Logger.recordOutput("ele goal", goal);
+    Logger.recordOutput(loggingPrefix + "goal", goal);
   }
 
   public void updateMotorOutput() {
@@ -67,7 +69,7 @@ public class Climb extends SubsystemBase {
   private void setVoltage(double volts) {
     left.setVoltage(volts);
     right.setVoltage(-volts);
-    Logger.recordOutput("ele volts", volts);
+    Logger.recordOutput(loggingPrefix + "volts", volts);
   }
 
   public void resetEncoder() {
@@ -76,6 +78,7 @@ public class Climb extends SubsystemBase {
 
   public void setGrab(double volts) {
     grab.setVoltage(volts);
+    Logger.recordOutput(loggingPrefix + "grabVolts", volts);
   }
 
   boolean hasStoppedGrabber = false;
@@ -83,12 +86,16 @@ public class Climb extends SubsystemBase {
   @Override
   public void periodic() {
     updateMotorOutput();
+    Logger.recordOutput(loggingPrefix + "hasStoppedGrabber", hasStoppedGrabber);
     // This method will be called once per scheduler run
     if (!hasStoppedGrabber
         && Timer.getFPGATimestamp()
             > 25) { // Not getMatchTime so it doesnt do weird stuff during auto
       setGrab(0);
       hasStoppedGrabber = true;
+      Logger.recordOutput(
+          loggingPrefix + "hasStoppedGrabber",
+          true); // This shouldn't be neccesary, but jut in case :)
     }
   }
 }

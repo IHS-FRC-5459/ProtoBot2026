@@ -4,39 +4,74 @@
 
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.*;
-
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Motors;
+import frc.robot.Constants.Sensors.Ports;
+import org.littletonrobotics.junction.Logger;
 
 public class Hood extends SubsystemBase {
-  private SparkMax motor;
-  private double goal;
+  private final SparkMax hoodController;
+  private final Encoder hoodEncoder;
+  private final ArmFeedforward hoodFeedforward;
+  private final PIDController hoodPID;
+  private double hoodSetpoint = 0;
+  private final String loggingPrefix = "subsystems/hood/";
 
   public Hood() {
-    motor = new SparkMax(Motors.hoodId, MotorType.kBrushless);
+    hoodController = new SparkMax(Motors.hoodId, MotorType.kBrushless);
+    hoodEncoder = new Encoder(Ports.HoodEncoderPort1, Ports.HoodEncoderPort2);
+    hoodFeedforward = new ArmFeedforward(0, 0.4, 0);
+    hoodPID = new PIDController(4, 1, 0.002);
+    hoodEncoder.setDistancePerPulse(0.02);
+    // This happends to be about encoder dist = degrees of hood
+    hoodEncoder.reset();
   }
 
   public void setGoal(double goal) {
-    this.goal = goal;
+    this.hoodSetpoint = goal;
+    hoodPID.setSetpoint(hoodSetpoint * Math.PI / 180);
   }
 
   public double getGoal() {
-    return this.goal;
+    return this.hoodSetpoint;
   }
 
   public void setVoltage(double volts) {
-    motor.setVoltage(-volts);
+    hoodController.setVoltage(-volts);
   }
 
   public double getVoltage() {
-    return -motor.get();
+    return -hoodController.get();
+  }
+
+  public double getEncoderDist() {
+    return -hoodEncoder.getDistance();
+  }
+
+  public double getEncoderRadians() {
+    return getEncoderDist() * Math.PI / 180;
+  }
+
+  public void updateMotorOutput() {
+    double pidVolts = hoodPID.calculate(getEncoderRadians());
+    double ffVolts = hoodFeedforward.calculate(getEncoderRadians(), hoodEncoder.getRate());
+    double volts = pidVolts + ffVolts;
+    hoodController.setVoltage(volts);
+    Logger.recordOutput(loggingPrefix + "pidVolts: ", pidVolts);
+    Logger.recordOutput(loggingPrefix + "ffVolts ", ffVolts);
+    Logger.recordOutput(loggingPrefix + "volts", volts);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    Logger.recordOutput(loggingPrefix + "EncoderReading", getEncoderDist());
+    Logger.recordOutput(loggingPrefix + "goal", getGoal());
+    updateMotorOutput();
   }
 }

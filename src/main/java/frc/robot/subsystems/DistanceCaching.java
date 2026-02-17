@@ -19,10 +19,12 @@ public class DistanceCaching extends SubsystemBase {
   int leftId, rightId;
   double offset;
   String direction;
+  private String loggingPrefix = "";
   /** Creates a new DistanceCaching. */
   // offset is the always posotive x translation of the distance sensors to the centerline (x=0
   // line)
   public DistanceCaching(int leftId, int rightId, double offset, String direction) {
+    loggingPrefix = "subsystems/distanceCaching/" + direction;
     left = new TimeOfFlight(leftId);
     right = new TimeOfFlight(rightId);
     left.setRangingMode(RangingMode.Short, 24);
@@ -97,13 +99,13 @@ public class DistanceCaching extends SubsystemBase {
     if (rightDistanceQ.size() > queueSize) {
       rightDistanceQ.remove();
     }
-    Logger.recordOutput("distance/rawdistancesleftdistsensor" + direction, leftRawDistance);
-    Logger.recordOutput("distance/rawdistancesrightdistsensor" + direction, rightRawDistance);
-    Logger.recordOutput("distance/left" + direction, getLeftFiltered());
-    Logger.recordOutput("distance/right" + direction, getRightFiltered());
-    Logger.recordOutput("distance/avg" + direction, getXDistance());
-    Logger.recordOutput("distance/getSampletimeleft", left.getSampleTime());
-    Logger.recordOutput("distance/isleftvalid" + direction, leftMeasurementsValid());
-    Logger.recordOutput("distance/isrightvalid" + direction, rightMeasurementsValid());
+    Logger.recordOutput(loggingPrefix + "rawdistancesleftdistsensor", leftRawDistance);
+    Logger.recordOutput(loggingPrefix + "rawdistancesrightdistsensor", rightRawDistance);
+    Logger.recordOutput(loggingPrefix + "left", getLeftFiltered());
+    Logger.recordOutput(loggingPrefix + "right", getRightFiltered());
+    Logger.recordOutput(loggingPrefix + "avg", getXDistance());
+    Logger.recordOutput(loggingPrefix + "getSampletimeleft", left.getSampleTime());
+    Logger.recordOutput(loggingPrefix + "isleftvalid", leftMeasurementsValid());
+    Logger.recordOutput(loggingPrefix + "isrightvalid", rightMeasurementsValid());
   }
 }

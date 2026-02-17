@@ -29,13 +29,13 @@ public class RunIntake extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    s_intake.setVoltage(4);
+    s_intake.setSpeed(0.7);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    s_intake.setVoltage(0);
+    s_intake.setSpeed(0);
     s_led.setIntaking(false);
   }
 

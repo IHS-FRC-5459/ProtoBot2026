@@ -8,17 +8,22 @@ import static frc.robot.Constants.*;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
   /** Creates a new Intake. */
   private TalonFX motor;
 
+  private double commandedSpeed;
+  private final String loggingPrefix = "subsystems/intake/";
+
   public Intake() {
     motor = new TalonFX(Motors.intakeId, canbus);
   }
 
-  public void setVoltage(double volts) {
-    motor.setVoltage(volts);
+  public void setSpeed(double speed) {
+    motor.set(speed);
+    commandedSpeed = speed;
   }
 
   public double getSpeed() {
@@ -27,6 +32,8 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void periodic() {
+    Logger.recordOutput(loggingPrefix + "commandedSpeed", commandedSpeed);
+    Logger.recordOutput(loggingPrefix + "speed", getSpeed());
     // This method will be called once per scheduler run
   }
 }

@@ -11,6 +11,7 @@ import com.ctre.phoenix6.hardware.CANdle;
 import com.ctre.phoenix6.signals.RGBWColor;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Colors;
+import org.littletonrobotics.junction.Logger;
 
 public class LED extends SubsystemBase {
   private final int framerate = 20;
@@ -28,6 +29,7 @@ public class LED extends SubsystemBase {
       isHappy,
       isRainbow;
   private CANdle candle;
+  private final String loggingPrefix = "subsystems/led/";
 
   public LED(CANdle candle) {
     this.candle = candle;
@@ -93,24 +95,47 @@ public class LED extends SubsystemBase {
     // This is just an exaple cascenario
     if (shooting) {
       setLEDs(Colors.green, framerate);
+      Logger.recordOutput(loggingPrefix + "led", "greenBlink");
+      Logger.recordOutput(loggingPrefix + "state", "shooting");
+
     } else if (elevatorGoingUp) {
       setLEDs(Colors.purple, framerate);
+      Logger.recordOutput(loggingPrefix + "led", "purpleBlink");
+      Logger.recordOutput(loggingPrefix + "state", "elevatorGoingUp");
     } else if (elevatorGoingDown) {
       setLEDs(Colors.red, framerate);
+      Logger.recordOutput(loggingPrefix + "led", "redBlink");
+
+      Logger.recordOutput(loggingPrefix + "state", "elevatorGoingDown");
+
     } else if (passing) {
       setLEDs(Colors.blue, framerate);
+      Logger.recordOutput(loggingPrefix + "led", "blueBlink");
+      Logger.recordOutput(loggingPrefix + "state", "passing");
     } else if (intaking) {
       setLEDs(Colors.yellow, framerate);
+      Logger.recordOutput(loggingPrefix + "led", "yellowBlink");
+      Logger.recordOutput(loggingPrefix + "state", "intaking");
     } else if (canShoot) {
       setLEDs(Colors.green);
+      Logger.recordOutput(loggingPrefix + "led", "green");
+      Logger.recordOutput(loggingPrefix + "state", "canShot");
     } else if (isAngry) {
       setLEDs(Colors.red);
+      Logger.recordOutput(loggingPrefix + "led", "red");
+      Logger.recordOutput(loggingPrefix + "state", "Angry");
     } else if (isHappy) {
       setLEDs(Colors.yellow);
+      Logger.recordOutput(loggingPrefix + "led", "yellow");
+      Logger.recordOutput(loggingPrefix + "state", "Happy");
     } else if (isRainbow) {
       doRainbow();
+      Logger.recordOutput(loggingPrefix + "led", "rainbow");
+      Logger.recordOutput(loggingPrefix + "state", "rainbow");
     } else {
       setLEDs(Colors.blank);
+      Logger.recordOutput(loggingPrefix + "led", "blank");
+      Logger.recordOutput(loggingPrefix + "state", "nothing");
     }
   }
 
