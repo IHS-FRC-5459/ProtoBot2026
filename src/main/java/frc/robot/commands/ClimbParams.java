@@ -38,6 +38,7 @@ public class ClimbParams {
     double x_pos = estPose.getX();
     double y_pos = estPose.getY();
     double mid_field_x = aprilTagLayout.getFieldLength() / 2;
+    final String loggingPrefix = "commands/climb/climbParams/";
 
     if (x_pos <= mid_field_x) { // IF BLUE
       omegaMultiplier = 1;
@@ -45,13 +46,13 @@ public class ClimbParams {
       yMultiplier = -1;
       step2YMult = 1;
       if (y_pos >= 3.75285) { // IF right
-        Logger.recordOutput("testt/condition", 2);
+        Logger.recordOutput(loggingPrefix + "condition", 2);
         goal = new Pose2d(Inches.of(41), Inches.of(177), new Rotation2d());
         isFront = true;
       } else // ELSE left
       {
         step2YMult = -1;
-        Logger.recordOutput("testt/condition", 4);
+        Logger.recordOutput(loggingPrefix + "condition", 4);
         goal = new Pose2d(Inches.of(43), Inches.of(117), new Rotation2d());
         isFront = false;
       }
@@ -64,14 +65,14 @@ public class ClimbParams {
       step2YMult = -1;
       if (y_pos <= 4.318) // IF right
       {
-        Logger.recordOutput("testt/condition", 1); // Left red climb align
+        Logger.recordOutput(loggingPrefix + "condition", 1); // Left red climb align
         goal = new Pose2d(Inches.of(43), Inches.of(136), new Rotation2d());
         isFront = true;
       } else // ELSE left
       {
         step2YMult = 1;
-        Logger.recordOutput("testt/condition", 3);
-        // Logger.recordOutput("testt/x sign", xMultiplier);
+        Logger.recordOutput(loggingPrefix + "condition", 3);
+        Logger.recordOutput("testt/x sign", xMultiplier);
 
         goal = new Pose2d(Inches.of(41), Inches.of(195), new Rotation2d());
         isFront = false;

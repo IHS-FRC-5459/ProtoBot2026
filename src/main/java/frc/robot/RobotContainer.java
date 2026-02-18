@@ -257,9 +257,10 @@ public class RobotContainer {
     operator.y().onFalse(new InstantCommand(() -> s_led.setIsHappy(false)));
     operator.back().onTrue(new InstantCommand(() -> s_led.setIsRainbow(true)));
     operator.back().onFalse(new InstantCommand(() -> s_led.setIsRainbow(false)));
-    SmartDashboard.putNumber("xPID_P", 2.5);
-    SmartDashboard.putNumber("xPID_I", 0.3);
-    SmartDashboard.putNumber("xPID_D", 0.4);
+    SmartDashboard.putNumber("yPID_P", 0.1);
+    SmartDashboard.putNumber("yPID_I", 0);
+    SmartDashboard.putNumber("yPID_D", 0);
+    SmartDashboard.putNumber("yFF_S", 0);
   }
 
   /**

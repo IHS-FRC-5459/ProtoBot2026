@@ -9,8 +9,8 @@ import static frc.robot.commands.DriveCommands.joystickDriveRelativeCustom;
 import static frc.robot.commands.DriveCommands.setIsFirstCall;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -29,6 +29,10 @@ public class ClimbAlign extends Command {
   PIDController yPID = new PIDController(0.1, 0, 0);
   PIDController xPID = new PIDController(2.5, 0.3, 0.4);
   PIDController omegaPID = new PIDController(0.1, 0, 0);
+  SimpleMotorFeedforward xFF = new SimpleMotorFeedforward(0.15, 0, 0);
+  SimpleMotorFeedforward omegaFF = new SimpleMotorFeedforward(0, 0, 0);
+  SimpleMotorFeedforward yFF = new SimpleMotorFeedforward(0, 0, 0);
+
   private final String loggingPrefix = "commands/climb/";
   /** Creates a new Climb. */
   // Climbs the right side of the climb structure(from the perspective of the alliance station)
@@ -52,6 +56,9 @@ public class ClimbAlign extends Command {
     // yPassed = false;
     // xPassed = false;
     isDone = false;
+    xPID.reset();
+    yPID.reset();
+    omegaPID.reset();
     // doneAligningToStart = false;
   }
 
@@ -63,9 +70,10 @@ public class ClimbAlign extends Command {
   @Override
   public void execute() {
     double passingX, passingY, passingOmega;
-    xPID.setP(SmartDashboard.getNumber("xPID_P", 0.1));
-    xPID.setI(SmartDashboard.getNumber("xPID_I", 0));
-    xPID.setD(SmartDashboard.getNumber("xPID_D", 0));
+    yPID.setP(SmartDashboard.getNumber("yPID_P", 0.1));
+    yPID.setI(SmartDashboard.getNumber("yPID_I", 0));
+    yPID.setD(SmartDashboard.getNumber("yPID_D", 0));
+    yFF.setKs(SmartDashboard.getNumber("yFF_S", 0));
     Pose2d currPose = s_drive.getPose();
     ClimbParams climbParams = new ClimbParams(currPose);
     // DistanceCaching distCache = climbParams.getDistCache();
@@ -93,20 +101,10 @@ public class ClimbAlign extends Command {
       numValidRangeMeasurements = 2;
       double rangeDiff = distCache.getDifference();
       shouldTurn = Math.abs(rangeDiff) > 0.005; // 0.005 is deadaspace
-      double deltaSign = 1;
-      if (rangeDiff < 0) {
-        deltaSign = -1;
-      }
-      double deltaSign2 = deltaSign;
-      double rangeDiff2 = rangeDiff;
       Logger.recordOutput(loggingPrefix + "rangeDiff", rangeDiff);
       Logger.recordOutput(loggingPrefix + "Leftvalid", distCache.leftMeasurementsValid());
       Logger.recordOutput(loggingPrefix + "rightvalid", distCache.rightMeasurementsValid());
-      turnCommandSupplier =
-          () ->
-              MathUtil.clamp(Math.abs(rangeDiff2), 0.23, 0.7)
-                  * deltaSign2
-                  * climbParams.getOmegaMultiplier();
+      passingOmega = rangeDiff * climbParams.getOmegaMultiplier();
     } else {
       Logger.recordOutput(loggingPrefix + "bothvalid", 1);
       shouldTurn = false;
@@ -120,6 +118,7 @@ public class ClimbAlign extends Command {
         Logger.recordOutput(loggingPrefix + "bothvalid", 0);
         numValidRangeMeasurements = 0;
       }
+      passingOmega = 0;
     }
     DoubleSupplier xSupplier;
     boolean xSkip = false;
@@ -137,35 +136,42 @@ public class ClimbAlign extends Command {
     if (!step1Done) {
       Logger.recordOutput(loggingPrefix + "step1Done", false);
       double deltaY = (currPose.getY() - climbPose.getY()) * -directionMult; // .4064=16in to m
-      ySupplier = () -> MathUtil.clamp(-deltaY, -0.5, 0.5) * climbParams.getYMultiplier();
+      passingY = 0; // -deltaY * climbParams.getYMultiplier();
     } else {
       Logger.recordOutput(loggingPrefix + "step1Done", true);
       double deltaY = sideDistCache.getDistanceFiltered() * -directionMult; // .4064=16in to m
-      if (Math.abs(deltaY) < 0.1) {
-        deltaY = 0;
-      }
-      double sign = 1;
-      if (deltaY < 0) {
-        sign = -1;
-      }
-      double sign2 = sign;
-      double deltaY2 = deltaY;
-      double yPower =
-          MathUtil.clamp(Math.abs(deltaY2), 0.2, 0.5) * climbParams.getStep2YMultiplier() * sign2;
-      ySupplier = () -> yPower;
-      Logger.recordOutput(loggingPrefix + "yPower", yPower);
+      passingY = -deltaY * climbParams.getStep2YMultiplier();
       Logger.recordOutput(loggingPrefix + "yDone", false);
       if (deltaY == 0) {
         Logger.recordOutput(loggingPrefix + "yDone", true);
         isDone = true;
-        ySupplier = () -> 0;
-        Logger.recordOutput(loggingPrefix + "yPower", 0);
+        passingY = 0;
       }
     }
+
+    double pidVoltsOmega = omegaPID.calculate(passingOmega, 0);
+    double ffVoltsOmega = omegaFF.calculate(passingOmega, 0) * -1;
+    Logger.recordOutput(loggingPrefix + "controllers/omega/pidVolts", pidVoltsOmega);
+    Logger.recordOutput(loggingPrefix + "controllers/omega/ffVolts", ffVoltsOmega);
+    turnCommandSupplier = () -> 0; // pidVoltsOmega + ffVoltsOmega;
+
+    double pidVoltsX = xPID.calculate(passingX, 0);
+    double ffVoltsX = xFF.calculate(passingX, 0) * -1;
+    Logger.recordOutput(loggingPrefix + "controllers/x/pidVolts", pidVoltsX);
+    Logger.recordOutput(loggingPrefix + "controllers/x/ffVolts", ffVoltsX);
+    xSupplier = () -> pidVoltsX + ffVoltsX;
+
+    double pidVoltsY = yPID.calculate(passingY, 0);
+    double ffVoltsY = yFF.calculate(passingY, 0) * -1;
+    Logger.recordOutput(loggingPrefix + "controllers/y/pidVolts", 0);
+    Logger.recordOutput(loggingPrefix + "controllers/y/ffVolts", 0);
+    // ySupplier = () -> pidVoltsY + ffVoltsY;
+    xSupplier = () -> 0;
     ySupplier = () -> 0;
     turnCommandSupplier = () -> 0;
-    xSupplier = () -> xPID.calculate(passingX, 0);
+
     Logger.recordOutput(loggingPrefix + "passing/xPassing", passingX);
+    Logger.recordOutput(loggingPrefix + "passing/omegaPassing", passingOmega);
     // omegaPassed = omegaPassed && time < 100; // bad practice, but its fine :)
     joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, turnCommandSupplier, shouldTurn);
     Logger.recordOutput(loggingPrefix + "Xdist", xDist);
