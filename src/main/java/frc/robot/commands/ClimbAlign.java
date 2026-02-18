@@ -27,10 +27,10 @@ public class ClimbAlign extends Command {
   Climb s_climb;
   DistanceSide sideDistCache;
   PIDController yPID = new PIDController(0.1, 0, 0);
-  PIDController xPID = new PIDController(2.5, 0.3, 0.4);
-  PIDController omegaPID = new PIDController(0.1, 0, 0);
-  SimpleMotorFeedforward xFF = new SimpleMotorFeedforward(0.15, 0, 0);
-  SimpleMotorFeedforward omegaFF = new SimpleMotorFeedforward(0, 0, 0);
+  PIDController xPID = new PIDController(2.5, 0.01, 0.03);
+  PIDController omegaPID = new PIDController(2.5, 0, 0.1);
+  SimpleMotorFeedforward xFF = new SimpleMotorFeedforward(0.12, 0, 0);
+  SimpleMotorFeedforward omegaFF = new SimpleMotorFeedforward(0.15, 0, 0);
   SimpleMotorFeedforward yFF = new SimpleMotorFeedforward(0, 0, 0);
 
   private final String loggingPrefix = "commands/climb/";
@@ -121,7 +121,6 @@ public class ClimbAlign extends Command {
       passingOmega = 0;
     }
     DoubleSupplier xSupplier;
-    boolean xSkip = false;
     if (numValidRangeMeasurements == 2 || numValidRangeMeasurements == 1) {
       double x = (xDist - climbPose.getX());
       Logger.recordOutput(loggingPrefix + "x", x);
@@ -132,7 +131,9 @@ public class ClimbAlign extends Command {
     // Works for both alliances
     // Y
     DoubleSupplier ySupplier;
-    step1Done = (xSkip && !shouldTurn) || step1Done;
+    Logger.recordOutput(loggingPrefix + "shouldTurn", shouldTurn);
+    step1Done = (Math.abs(passingX) < 0.005 && !shouldTurn) || step1Done;
+    step1Done = true;
     if (!step1Done) {
       Logger.recordOutput(loggingPrefix + "step1Done", false);
       double deltaY = (currPose.getY() - climbPose.getY()) * -directionMult; // .4064=16in to m
@@ -149,11 +150,11 @@ public class ClimbAlign extends Command {
       }
     }
 
-    double pidVoltsOmega = omegaPID.calculate(passingOmega, 0);
-    double ffVoltsOmega = omegaFF.calculate(passingOmega, 0) * -1;
+    double pidVoltsOmega = omegaPID.calculate(passingOmega, 0) * -1;
+    double ffVoltsOmega = omegaFF.calculate(passingOmega, 0);
     Logger.recordOutput(loggingPrefix + "controllers/omega/pidVolts", pidVoltsOmega);
     Logger.recordOutput(loggingPrefix + "controllers/omega/ffVolts", ffVoltsOmega);
-    turnCommandSupplier = () -> 0; // pidVoltsOmega + ffVoltsOmega;
+    turnCommandSupplier = () -> pidVoltsOmega + ffVoltsOmega;
 
     double pidVoltsX = xPID.calculate(passingX, 0);
     double ffVoltsX = xFF.calculate(passingX, 0) * -1;
@@ -163,15 +164,14 @@ public class ClimbAlign extends Command {
 
     double pidVoltsY = yPID.calculate(passingY, 0);
     double ffVoltsY = yFF.calculate(passingY, 0) * -1;
-    Logger.recordOutput(loggingPrefix + "controllers/y/pidVolts", 0);
-    Logger.recordOutput(loggingPrefix + "controllers/y/ffVolts", 0);
-    // ySupplier = () -> pidVoltsY + ffVoltsY;
-    xSupplier = () -> 0;
-    ySupplier = () -> 0;
-    turnCommandSupplier = () -> 0;
+    Logger.recordOutput(loggingPrefix + "controllers/y/pidVolts", pidVoltsY);
+    Logger.recordOutput(loggingPrefix + "controllers/y/ffVolts", ffVoltsY);
+    ySupplier = () -> pidVoltsY + ffVoltsY;
 
     Logger.recordOutput(loggingPrefix + "passing/xPassing", passingX);
     Logger.recordOutput(loggingPrefix + "passing/omegaPassing", passingOmega);
+    Logger.recordOutput(loggingPrefix + "passing/yPassing", passingY);
+
     // omegaPassed = omegaPassed && time < 100; // bad practice, but its fine :)
     joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, turnCommandSupplier, shouldTurn);
     Logger.recordOutput(loggingPrefix + "Xdist", xDist);
