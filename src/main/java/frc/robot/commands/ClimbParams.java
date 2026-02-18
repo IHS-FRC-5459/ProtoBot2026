@@ -59,7 +59,7 @@ public class ClimbParams {
     else // ELSE red
     {
       omegaMultiplier = 1;
-      xMultiplier = 1;
+      xMultiplier = -1;
       yMultiplier = -1;
       step2YMult = -1;
       if (y_pos <= 4.318) // IF right

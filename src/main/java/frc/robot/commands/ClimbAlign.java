@@ -12,6 +12,7 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.DistanceCaching;
@@ -26,6 +27,8 @@ public class ClimbAlign extends Command {
   Climb s_climb;
   DistanceSide sideDistCache;
   PIDController yPID = new PIDController(0.1, 0, 0);
+  PIDController xPID = new PIDController(2.5, 0.3, 0.4);
+  PIDController omegaPID = new PIDController(0.1, 0, 0);
   private final String loggingPrefix = "commands/climb/";
   /** Creates a new Climb. */
   // Climbs the right side of the climb structure(from the perspective of the alliance station)
@@ -59,6 +62,10 @@ public class ClimbAlign extends Command {
 
   @Override
   public void execute() {
+    double passingX, passingY, passingOmega;
+    xPID.setP(SmartDashboard.getNumber("xPID_P", 0.1));
+    xPID.setI(SmartDashboard.getNumber("xPID_I", 0));
+    xPID.setD(SmartDashboard.getNumber("xPID_D", 0));
     Pose2d currPose = s_drive.getPose();
     ClimbParams climbParams = new ClimbParams(currPose);
     // DistanceCaching distCache = climbParams.getDistCache();
@@ -118,22 +125,10 @@ public class ClimbAlign extends Command {
     boolean xSkip = false;
     if (numValidRangeMeasurements == 2 || numValidRangeMeasurements == 1) {
       double x = (xDist - climbPose.getX());
-      int xSign = 1;
-      if (x < 0) {
-        xSign = -1;
-      }
-      xSkip = Math.abs(x) < 0.012;
       Logger.recordOutput(loggingPrefix + "x", x);
-      Logger.recordOutput(loggingPrefix + "xSkip", xSkip);
-      x = MathUtil.clamp(Math.abs(x), 0.2, 0.5) * xSign;
-      if (xSkip) {
-        x = 0;
-      }
-      Logger.recordOutput(loggingPrefix + "math/diff", x);
-      double xS = x;
-      xSupplier = () -> xS * climbParams.getXMultiplier();
+      passingX = x * climbParams.getXMultiplier();
     } else {
-      xSupplier = () -> 0;
+      passingX = 0;
     }
     // Works for both alliances
     // Y
@@ -169,6 +164,8 @@ public class ClimbAlign extends Command {
     }
     ySupplier = () -> 0;
     turnCommandSupplier = () -> 0;
+    xSupplier = () -> xPID.calculate(passingX, 0);
+    Logger.recordOutput(loggingPrefix + "passing/xPassing", passingX);
     // omegaPassed = omegaPassed && time < 100; // bad practice, but its fine :)
     joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, turnCommandSupplier, shouldTurn);
     Logger.recordOutput(loggingPrefix + "Xdist", xDist);
