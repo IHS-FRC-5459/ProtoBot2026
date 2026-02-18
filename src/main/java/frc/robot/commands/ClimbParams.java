@@ -24,10 +24,14 @@ import org.littletonrobotics.junction.Logger;
 public class ClimbParams {
   private int xMultiplier = 1; // Sign for x-direction
   private int yMultiplier = -1; // Sign for y-direction
+  private int step2YMult = -1;
   private boolean isFront = false;
   private int omegaMultiplier = 1; // Sign for rotation
   private Pose2d goal;
   private DistanceCaching distCache;
+
+  // Notes: Left and right mean left and right if you were to face the climb structure standing on
+  // the field of whatever structure you are climbing
 
   public ClimbParams(Pose2d estPose) {
 
@@ -39,15 +43,16 @@ public class ClimbParams {
       omegaMultiplier = 1;
       xMultiplier = -1;
       yMultiplier = -1;
+      step2YMult = 1;
       if (y_pos >= 3.75285) { // IF right
         Logger.recordOutput("testt/condition", 2);
-        goal = new Pose2d(Inches.of(42), Inches.of(177), new Rotation2d());
+        goal = new Pose2d(Inches.of(41), Inches.of(177), new Rotation2d());
         isFront = true;
       } else // ELSE left
       {
+        step2YMult = -1;
         Logger.recordOutput("testt/condition", 4);
-
-        goal = new Pose2d(Inches.of(42), Inches.of(117), new Rotation2d());
+        goal = new Pose2d(Inches.of(43), Inches.of(117), new Rotation2d());
         isFront = false;
       }
     } // END IF BLUE
@@ -56,18 +61,19 @@ public class ClimbParams {
       omegaMultiplier = 1;
       xMultiplier = 1;
       yMultiplier = -1;
+      step2YMult = -1;
       if (y_pos <= 4.318) // IF right
       {
         Logger.recordOutput("testt/condition", 1); // Left red climb align
-        goal = new Pose2d(Inches.of(42), Inches.of(136), new Rotation2d());
+        goal = new Pose2d(Inches.of(43), Inches.of(136), new Rotation2d());
         isFront = true;
       } else // ELSE left
       {
-
+        step2YMult = 1;
         Logger.recordOutput("testt/condition", 3);
         // Logger.recordOutput("testt/x sign", xMultiplier);
 
-        goal = new Pose2d(Inches.of(42), Inches.of(195), new Rotation2d());
+        goal = new Pose2d(Inches.of(41), Inches.of(195), new Rotation2d());
         isFront = false;
       }
     } // END ELSE RED
@@ -83,6 +89,10 @@ public class ClimbParams {
 
   public int getYMultiplier() {
     return yMultiplier;
+  }
+
+  public int getStep2YMultiplier() {
+    return step2YMult;
   }
 
   public int getOmegaMultiplier() {

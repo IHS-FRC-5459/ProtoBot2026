@@ -89,12 +89,12 @@ public class DistanceCaching extends SubsystemBase {
   public void periodic() {
 
     // This method will be called once per scheduler run
-    double leftRawDistance = left.getRange();
+    double leftRawDistance = left.getRange() - 30;
     leftDistancesQ.add(leftRawDistance);
     if (leftDistancesQ.size() > queueSize) {
       leftDistancesQ.remove();
     }
-    double rightRawDistance = right.getRange();
+    double rightRawDistance = right.getRange() - 30;
     rightDistanceQ.add(rightRawDistance);
     if (rightDistanceQ.size() > queueSize) {
       rightDistanceQ.remove();

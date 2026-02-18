@@ -53,7 +53,7 @@ public class DistanceSide extends SubsystemBase {
   public void periodic() {
 
     // This method will be called once per scheduler run
-    double rawDistance = sensor.getRange();
+    double rawDistance = sensor.getRange() - 30;
     queue.add(rawDistance);
     if (queue.size() > queueSize) {
       queue.remove();
