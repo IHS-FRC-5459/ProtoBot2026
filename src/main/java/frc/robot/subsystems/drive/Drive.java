@@ -43,6 +43,8 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -157,6 +159,8 @@ public class Drive extends SubsystemBase {
                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
   }
 
+  Field2d field = new Field2d();
+
   @Override
   public void periodic() {
     odometryLock.lock(); // Prevents odometry updates while reading data
@@ -216,6 +220,9 @@ public class Drive extends SubsystemBase {
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
     Logger.recordOutput("Est pose drive subsystem", poseEstimator.getEstimatedPosition());
+
+    field.setRobotPose(getPose());
+    SmartDashboard.putData("FieldWithRobot", field);
   }
 
   /**
