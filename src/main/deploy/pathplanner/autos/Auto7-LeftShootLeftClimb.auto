@@ -7,25 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "BA-start"
+            "pathName": "Auto7-AlignToShootGoToHub"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 1.5
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "BA-PT2"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "climbAlign"
+            "pathName": "Auto7-ShootGoToLeftClimb"
           }
         }
       ]
