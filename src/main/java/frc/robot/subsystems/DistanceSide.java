@@ -23,7 +23,7 @@ public class DistanceSide extends SubsystemBase {
   // line)
   public DistanceSide() {
     sensor = new TimeOfFlight(Constants.Sensors.Distance.climbSideId);
-    sensor.setRangingMode(RangingMode.Short, 24);
+    sensor.setRangingMode(RangingMode.Medium, 24);
   }
 
   public double getYDistance() {
@@ -34,9 +34,10 @@ public class DistanceSide extends SubsystemBase {
     double sumOfDistanceMeasurements = 0;
     int numZeroes = 0;
     for (double distanceMeasurement : queue) {
-      sumOfDistanceMeasurements += distanceMeasurement;
-      if (distanceMeasurement == 0) {
+      if (distanceMeasurement <= 0 || distanceMeasurement >= 1600) {
         numZeroes++;
+      } else {
+        sumOfDistanceMeasurements += distanceMeasurement;
       }
     }
     if (sumOfDistanceMeasurements == 0) {
@@ -51,7 +52,7 @@ public class DistanceSide extends SubsystemBase {
 
   @Override
   public void periodic() {
-
+    Logger.recordOutput(loggingPrefix + "isValidNative", sensor.isRangeValid());
     // This method will be called once per scheduler run
     double rawDistance = sensor.getRange() - 30;
     queue.add(rawDistance);

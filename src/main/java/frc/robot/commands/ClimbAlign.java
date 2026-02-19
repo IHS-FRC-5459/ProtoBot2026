@@ -12,7 +12,6 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.DistanceCaching;
@@ -26,13 +25,15 @@ public class ClimbAlign extends Command {
   Drive s_drive;
   Climb s_climb;
   DistanceSide sideDistCache;
-  PIDController yPID = new PIDController(0.1, 0, 0);
-  PIDController xPID = new PIDController(2.5, 0.01, 0.03);
-  PIDController omegaPID = new PIDController(2.5, 0, 0.1);
-  SimpleMotorFeedforward xFF = new SimpleMotorFeedforward(0.12, 0, 0);
-  SimpleMotorFeedforward omegaFF = new SimpleMotorFeedforward(0.15, 0, 0);
-  SimpleMotorFeedforward yFF = new SimpleMotorFeedforward(0, 0, 0);
-
+  private final double xFFKs = 0.12;
+  private final double omegaFFKs = 0.15;
+  PIDController yPID = new PIDController(0.6, 0.03, 0.1);
+  PIDController xPID = new PIDController(1.5, 0.02, 0.03);
+  PIDController omegaPID = new PIDController(2.5, 0, 0.02);
+  SimpleMotorFeedforward xFF = new SimpleMotorFeedforward(xFFKs, 0, 0);
+  SimpleMotorFeedforward omegaFF = new SimpleMotorFeedforward(omegaFFKs, 0, 0);
+  SimpleMotorFeedforward yFF = new SimpleMotorFeedforward(0.1, 0, 0);
+  private final double stoppingDist = 0.12;
   private final String loggingPrefix = "commands/climb/";
   /** Creates a new Climb. */
   // Climbs the right side of the climb structure(from the perspective of the alliance station)
@@ -59,6 +60,9 @@ public class ClimbAlign extends Command {
     xPID.reset();
     yPID.reset();
     omegaPID.reset();
+    step1Done = false;
+    xFF.setKs(xFFKs);
+    omegaFF.setKs(omegaFFKs);
     // doneAligningToStart = false;
   }
 
@@ -70,10 +74,25 @@ public class ClimbAlign extends Command {
   @Override
   public void execute() {
     double passingX, passingY, passingOmega;
-    yPID.setP(SmartDashboard.getNumber("yPID_P", 0.1));
-    yPID.setI(SmartDashboard.getNumber("yPID_I", 0));
-    yPID.setD(SmartDashboard.getNumber("yPID_D", 0));
-    yFF.setKs(SmartDashboard.getNumber("yFF_S", 0));
+    // xPID.setP(SmartDashboard.getNumber("xPID_P", 0.1));
+    // xPID.setI(SmartDashboard.getNumber("xPID_I", 0));
+    // xPID.setD(SmartDashboard.getNumber("xPID_D", 0));
+    // xFF.setKs(SmartDashboard.getNumber("xFF_S", 0));
+    // yPID.setP(SmartDashboard.getNumber("yPID_P", 0.1));
+    // yPID.setI(SmartDashboard.getNumber("yPID_I", 0));
+    // yPID.setD(SmartDashboard.getNumber("yPID_D", 0));
+    // yFF.setKs(SmartDashboard.getNumber("yFF_S", 0));
+    // omegaPID.setP(SmartDashboard.getNumber("omegaPID_P", 0.1));
+    // omegaPID.setI(SmartDashboard.getNumber("omegaPID_I", 0));
+    // omegaPID.setD(SmartDashboard.getNumber("omegaPID_D", 0));
+    // omegaFF.setKs(SmartDashboard.getNumber("omegaFF_S", 0));
+    // boolean xEnabled = SmartDashboard.getBoolean("xEnabled", false);
+    // boolean yEnabled = SmartDashboard.getBoolean("yEnabled", false);
+    // boolean omegaEnabled = SmartDashboard.getBoolean("omegaEnabled", false);
+    // stoppingDist = SmartDashboard.getNumber("stoppingDist", stoppingDist);
+    boolean xEnabled = true;
+    boolean yEnabled = true;
+    boolean omegaEnabled = true;
     Pose2d currPose = s_drive.getPose();
     ClimbParams climbParams = new ClimbParams(currPose);
     // DistanceCaching distCache = climbParams.getDistCache();
@@ -121,29 +140,42 @@ public class ClimbAlign extends Command {
       passingOmega = 0;
     }
     DoubleSupplier xSupplier;
+    boolean xSkip = false;
     if (numValidRangeMeasurements == 2 || numValidRangeMeasurements == 1) {
       double x = (xDist - climbPose.getX());
+      xSkip = Math.abs(x) <= 0.012;
       Logger.recordOutput(loggingPrefix + "x", x);
       passingX = x * climbParams.getXMultiplier();
     } else {
       passingX = 0;
     }
     // Works for both alliances
-    // Y
+    //
     DoubleSupplier ySupplier;
-    Logger.recordOutput(loggingPrefix + "shouldTurn", shouldTurn);
-    step1Done = (Math.abs(passingX) < 0.005 && !shouldTurn) || step1Done;
-    step1Done = true;
+    boolean lastStep1Done = step1Done;
+    step1Done = (xSkip && !shouldTurn) || step1Done;
+    if (lastStep1Done != step1Done) { // Resets PID values at step 2
+      xPID.reset();
+      yPID.reset();
+      omegaPID.reset();
+    }
+    // step1Done = SmartDashboard.getBoolean("step1Done", true);
+
     if (!step1Done) {
       Logger.recordOutput(loggingPrefix + "step1Done", false);
       double deltaY = (currPose.getY() - climbPose.getY()) * -directionMult; // .4064=16in to m
       passingY = 0; // -deltaY * climbParams.getYMultiplier();
     } else {
+      // passingX = 0;
+      // passingOmega = 0;
+      xFF.setKs(0.01);
+      omegaFF.setKs(0.01);
+      passingOmega *= -1;
       Logger.recordOutput(loggingPrefix + "step1Done", true);
       double deltaY = sideDistCache.getDistanceFiltered() * -directionMult; // .4064=16in to m
       passingY = -deltaY * climbParams.getStep2YMultiplier();
       Logger.recordOutput(loggingPrefix + "yDone", false);
-      if (deltaY == 0) {
+      if (Math.abs(deltaY) <= stoppingDist) {
         Logger.recordOutput(loggingPrefix + "yDone", true);
         isDone = true;
         passingY = 0;
@@ -164,9 +196,19 @@ public class ClimbAlign extends Command {
 
     double pidVoltsY = yPID.calculate(passingY, 0);
     double ffVoltsY = yFF.calculate(passingY, 0) * -1;
-    Logger.recordOutput(loggingPrefix + "controllers/y/pidVolts", pidVoltsY);
-    Logger.recordOutput(loggingPrefix + "controllers/y/ffVolts", ffVoltsY);
+    Logger.recordOutput(loggingPrefix + "controllers/y/pidVolts", 0);
+    Logger.recordOutput(loggingPrefix + "controllers/y/ffVolts", 0);
     ySupplier = () -> pidVoltsY + ffVoltsY;
+
+    if (!yEnabled) {
+      ySupplier = () -> 0;
+    }
+    if (!xEnabled) {
+      xSupplier = () -> 0;
+    }
+    if (!omegaEnabled) {
+      turnCommandSupplier = () -> 0;
+    }
 
     Logger.recordOutput(loggingPrefix + "passing/xPassing", passingX);
     Logger.recordOutput(loggingPrefix + "passing/omegaPassing", passingOmega);
