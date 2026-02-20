@@ -12,6 +12,8 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.DistanceCaching;
@@ -28,13 +30,13 @@ public class ClimbAlign extends Command {
   private final double xFFKs = 0.12;
   private final double omegaFFKs = 0.15;
   private final double omegaPIDI = 0;
-  PIDController yPID = new PIDController(0.6, 0.03, 0.1);
+  PIDController yPID = new PIDController(0.7, 0.03, 0.2);
   PIDController xPID = new PIDController(1.5, 0.02, 0.03);
   PIDController omegaPID = new PIDController(2.5, omegaPIDI, 0.02);
   SimpleMotorFeedforward xFF = new SimpleMotorFeedforward(xFFKs, 0, 0);
   SimpleMotorFeedforward omegaFF = new SimpleMotorFeedforward(omegaFFKs, 0, 0);
-  SimpleMotorFeedforward yFF = new SimpleMotorFeedforward(0.1, 0, 0);
-  private final double stoppingDist = 0.28;
+  SimpleMotorFeedforward yFF = new SimpleMotorFeedforward(0.23, 0, 0);
+  private final double stoppingDist = 0.13;
   private final String loggingPrefix = "commands/climb/";
   /** Creates a new Climb. */
   // Climbs the right side of the climb structure(from the perspective of the alliance station)
@@ -51,6 +53,7 @@ public class ClimbAlign extends Command {
   int time = 0;
   boolean isFirstTime = false;
   long startOfTransition = 0;
+  ClimbParams climbParams;
 
   @Override
   public void initialize() {
@@ -68,6 +71,8 @@ public class ClimbAlign extends Command {
     xFF.setKs(xFFKs);
     omegaFF.setKs(omegaFFKs);
     omegaPID.setI(omegaPIDI);
+    Pose2d currPose = s_drive.getPose();
+    climbParams = new ClimbParams(currPose);
     // doneAligningToStart = false;
   }
 
@@ -76,7 +81,6 @@ public class ClimbAlign extends Command {
   // 0 = x & omega   1 = turn wheels to 90deg   2 = y
   private int state = 0;
   // private boolean omegaPassed1, yPassed, xPassed = false;
-
   @Override
   public void execute() {
     double passingX, passingY, passingOmega;
@@ -99,8 +103,6 @@ public class ClimbAlign extends Command {
     boolean xEnabled = true;
     boolean yEnabled = true;
     boolean omegaEnabled = true;
-    Pose2d currPose = s_drive.getPose();
-    ClimbParams climbParams = new ClimbParams(currPose);
     // DistanceCaching distCache = climbParams.getDistCache();
     DistanceCaching distCache = s_climb.getDistanceCacheBack();
     if (climbParams.getIsFront()) {
@@ -164,7 +166,7 @@ public class ClimbAlign extends Command {
     Logger.recordOutput(loggingPrefix + "startOfTransition", startOfTransition);
     Logger.recordOutput(
         loggingPrefix + "elapsedTime", System.currentTimeMillis() - startOfTransition);
-    if (state == 2 || (state == 1 && System.currentTimeMillis() - startOfTransition > 1000)) {
+    if (state == 2 || (state == 1 && System.currentTimeMillis() - startOfTransition > 100)) {
       state = 2;
     } else if (doneFirstStage || state == 1) {
       state = 1;
@@ -176,10 +178,17 @@ public class ClimbAlign extends Command {
     // step1Done = SmartDashboard.getBoolean("step1Done", true);
     Logger.recordOutput(loggingPrefix + "state", state);
     passingY = 0;
+    boolean runSpeeds = true;
     if (state == 1) {
       passingX = 0;
       passingOmega = 0;
-      passingY = 0; // Set later
+      passingY = 0;
+      runSpeeds = false;
+      SwerveModuleState[] states = new SwerveModuleState[4];
+      for (int i = 0; i < 4; i++) {
+        states[i] = new SwerveModuleState(0, Rotation2d.fromDegrees(270));
+      }
+      s_drive.runModuleStates(states);
     } else if (state == 2) {
       passingX = 0;
       passingOmega = 0;
@@ -229,7 +238,9 @@ public class ClimbAlign extends Command {
     Logger.recordOutput(loggingPrefix + "passing/yPassing", passingY);
 
     // omegaPassed = omegaPassed && time < 100; // bad practice, but its fine :)
-    joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, turnCommandSupplier, shouldTurn);
+    if (runSpeeds) {
+      joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, turnCommandSupplier, shouldTurn);
+    }
     Logger.recordOutput(loggingPrefix + "Xdist", xDist);
   }
 

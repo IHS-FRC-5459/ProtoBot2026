@@ -366,10 +366,10 @@ public class Drive extends SubsystemBase {
 
   // Our own custom thing to set the rotation o the modules
   public void runModuleStates(SwerveModuleState[] states) {
+    SwerveDriveKinematics.desaturateWheelSpeeds(states, TunerConstants.kSpeedAt12Volts);
     for (int i = 0; i < 4; i++) {
-      SwerveModuleState.optimize(states[i], getModulePositions()[i].angle);
+      modules[i].runSetpoint(states[i]);
     }
-    for (int i = 0; i < 4; i++) {}
   }
 
   /** Returns an array of module translations. */
