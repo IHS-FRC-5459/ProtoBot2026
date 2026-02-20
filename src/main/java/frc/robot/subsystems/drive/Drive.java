@@ -364,6 +364,14 @@ public class Drive extends SubsystemBase {
     return getMaxLinearSpeedMetersPerSec() / DRIVE_BASE_RADIUS;
   }
 
+  // Our own custom thing to set the rotation o the modules
+  public void runModuleStates(SwerveModuleState[] states) {
+    for (int i = 0; i < 4; i++) {
+      SwerveModuleState.optimize(states[i], getModulePositions()[i].angle);
+    }
+    for (int i = 0; i < 4; i++) {}
+  }
+
   /** Returns an array of module translations. */
   public static Translation2d[] getModuleTranslations() {
     return new Translation2d[] {

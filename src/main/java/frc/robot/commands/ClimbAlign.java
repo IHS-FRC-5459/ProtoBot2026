@@ -63,7 +63,7 @@ public class ClimbAlign extends Command {
     xPID.reset();
     yPID.reset();
     omegaPID.reset();
-    isFirstTime = false;
+    isFirstTime = true;
     state = 0;
     xFF.setKs(xFFKs);
     omegaFF.setKs(omegaFFKs);
@@ -160,22 +160,26 @@ public class ClimbAlign extends Command {
     DoubleSupplier ySupplier;
     // xSkip && !shouldTurn
     boolean doneFirstStage = xSkip && !shouldTurn;
-    state = 0;
-    if (doneFirstStage && isFirstTime) {
-      state = 1;
-      isFirstTime = false;
-      startOfTransition = System.currentTimeMillis();
-    } else if (doneFirstStage && System.currentTimeMillis() - startOfTransition > 40) {
+    Logger.recordOutput(loggingPrefix + "doneFirstStage", doneFirstStage);
+    Logger.recordOutput(loggingPrefix + "startOfTransition", startOfTransition);
+    Logger.recordOutput(
+        loggingPrefix + "elapsedTime", System.currentTimeMillis() - startOfTransition);
+    if (state == 2 || (state == 1 && System.currentTimeMillis() - startOfTransition > 1000)) {
       state = 2;
+    } else if (doneFirstStage || state == 1) {
+      state = 1;
+      if (isFirstTime) {
+        isFirstTime = false;
+        startOfTransition = System.currentTimeMillis();
+      }
     }
-
     // step1Done = SmartDashboard.getBoolean("step1Done", true);
+    Logger.recordOutput(loggingPrefix + "state", state);
     passingY = 0;
     if (state == 1) {
       passingX = 0;
       passingOmega = 0;
-      passingY = 0;
-      // Do turn
+      passingY = 0; // Set later
     } else if (state == 2) {
       passingX = 0;
       passingOmega = 0;
@@ -207,7 +211,9 @@ public class ClimbAlign extends Command {
     Logger.recordOutput(loggingPrefix + "controllers/y/pidVolts", 0);
     Logger.recordOutput(loggingPrefix + "controllers/y/ffVolts", 0);
     ySupplier = () -> pidVoltsY + ffVoltsY;
-
+    if (state == 1) {
+      ySupplier = () -> 0.1;
+    }
     if (!yEnabled) {
       ySupplier = () -> 0;
     }
