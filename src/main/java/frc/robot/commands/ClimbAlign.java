@@ -27,13 +27,14 @@ public class ClimbAlign extends Command {
   DistanceSide sideDistCache;
   private final double xFFKs = 0.12;
   private final double omegaFFKs = 0.15;
+  private final double omegaPIDI = 0;
   PIDController yPID = new PIDController(0.6, 0.03, 0.1);
   PIDController xPID = new PIDController(1.5, 0.02, 0.03);
-  PIDController omegaPID = new PIDController(2.5, 0, 0.02);
+  PIDController omegaPID = new PIDController(2.5, omegaPIDI, 0.02);
   SimpleMotorFeedforward xFF = new SimpleMotorFeedforward(xFFKs, 0, 0);
   SimpleMotorFeedforward omegaFF = new SimpleMotorFeedforward(omegaFFKs, 0, 0);
   SimpleMotorFeedforward yFF = new SimpleMotorFeedforward(0.1, 0, 0);
-  private final double stoppingDist = 0.12;
+  private final double stoppingDist = 0.28;
   private final String loggingPrefix = "commands/climb/";
   /** Creates a new Climb. */
   // Climbs the right side of the climb structure(from the perspective of the alliance station)
@@ -48,6 +49,8 @@ public class ClimbAlign extends Command {
   // Called when the command is initially scheduled.
   // private boolean doneAligningToStart = false;
   int time = 0;
+  boolean isFirstTime = false;
+  long startOfTransition = 0;
 
   @Override
   public void initialize() {
@@ -60,15 +63,18 @@ public class ClimbAlign extends Command {
     xPID.reset();
     yPID.reset();
     omegaPID.reset();
-    step1Done = false;
+    isFirstTime = false;
+    state = 0;
     xFF.setKs(xFFKs);
     omegaFF.setKs(omegaFFKs);
+    omegaPID.setI(omegaPIDI);
     // doneAligningToStart = false;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   private boolean isDone = false;
-  private boolean step1Done = false;
+  // 0 = x & omega   1 = turn wheels to 90deg   2 = y
+  private int state = 0;
   // private boolean omegaPassed1, yPassed, xPassed = false;
 
   @Override
@@ -152,25 +158,27 @@ public class ClimbAlign extends Command {
     // Works for both alliances
     //
     DoubleSupplier ySupplier;
-    boolean lastStep1Done = step1Done;
-    step1Done = (xSkip && !shouldTurn) || step1Done;
-    if (lastStep1Done != step1Done) { // Resets PID values at step 2
-      xPID.reset();
-      yPID.reset();
-      omegaPID.reset();
+    // xSkip && !shouldTurn
+    boolean doneFirstStage = xSkip && !shouldTurn;
+    state = 0;
+    if (doneFirstStage && isFirstTime) {
+      state = 1;
+      isFirstTime = false;
+      startOfTransition = System.currentTimeMillis();
+    } else if (doneFirstStage && System.currentTimeMillis() - startOfTransition > 40) {
+      state = 2;
     }
-    // step1Done = SmartDashboard.getBoolean("step1Done", true);
 
-    if (!step1Done) {
-      Logger.recordOutput(loggingPrefix + "step1Done", false);
-      double deltaY = (currPose.getY() - climbPose.getY()) * -directionMult; // .4064=16in to m
-      passingY = 0; // -deltaY * climbParams.getYMultiplier();
-    } else {
-      // passingX = 0;
-      // passingOmega = 0;
-      xFF.setKs(0.01);
-      omegaFF.setKs(0.01);
-      passingOmega *= -1;
+    // step1Done = SmartDashboard.getBoolean("step1Done", true);
+    passingY = 0;
+    if (state == 1) {
+      passingX = 0;
+      passingOmega = 0;
+      passingY = 0;
+      // Do turn
+    } else if (state == 2) {
+      passingX = 0;
+      passingOmega = 0;
       Logger.recordOutput(loggingPrefix + "step1Done", true);
       double deltaY = sideDistCache.getDistanceFiltered() * -directionMult; // .4064=16in to m
       passingY = -deltaY * climbParams.getStep2YMultiplier();

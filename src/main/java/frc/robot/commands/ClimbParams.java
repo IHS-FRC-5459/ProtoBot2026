@@ -74,7 +74,7 @@ public class ClimbParams {
         Logger.recordOutput(loggingPrefix + "condition", 3);
         Logger.recordOutput("testt/x sign", xMultiplier);
 
-        goal = new Pose2d(Inches.of(39.25), Inches.of(195), new Rotation2d());
+        goal = new Pose2d(Inches.of(40.75), Inches.of(195), new Rotation2d());
         isFront = false;
       }
     } // END ELSE RED
