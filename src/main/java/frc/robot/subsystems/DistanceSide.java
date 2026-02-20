@@ -23,11 +23,15 @@ public class DistanceSide extends SubsystemBase {
   // line)
   public DistanceSide() {
     sensor = new TimeOfFlight(Constants.Sensors.Distance.climbSideId);
-    sensor.setRangingMode(RangingMode.Medium, 24);
+    sensor.setRangingMode(RangingMode.Short, 24);
   }
 
   public double getYDistance() {
     return getDistanceFiltered() + Constants.Sensors.Distance.yRobotOffsetSide;
+  }
+
+  public TimeOfFlight.Status getStatus() {
+    return sensor.getStatus();
   }
 
   public double getDistanceFiltered() {
@@ -40,7 +44,7 @@ public class DistanceSide extends SubsystemBase {
         sumOfDistanceMeasurements += distanceMeasurement;
       }
     }
-    if (sumOfDistanceMeasurements == 0) {
+    if (sumOfDistanceMeasurements <= 0) {
       return -1;
     }
     return (sumOfDistanceMeasurements / (queue.size() - numZeroes)) / 1000;
@@ -55,6 +59,9 @@ public class DistanceSide extends SubsystemBase {
     Logger.recordOutput(loggingPrefix + "isValidNative", sensor.isRangeValid());
     // This method will be called once per scheduler run
     double rawDistance = sensor.getRange() - 30;
+    if (sensor.getStatus() != TimeOfFlight.Status.Valid) {
+      rawDistance = -1;
+    }
     queue.add(rawDistance);
     if (queue.size() > queueSize) {
       queue.remove();
@@ -63,5 +70,6 @@ public class DistanceSide extends SubsystemBase {
     Logger.recordOutput(loggingPrefix + "filtered", getDistanceFiltered());
     Logger.recordOutput(loggingPrefix + "getSampletimeleft", sensor.getSampleTime());
     Logger.recordOutput(loggingPrefix + "isValid", measurementsValid());
+    Logger.recordOutput(loggingPrefix + "status", getStatus());
   }
 }

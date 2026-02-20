@@ -42,18 +42,18 @@ public class ClimbParams {
 
     if (x_pos <= mid_field_x) { // IF BLUE
       omegaMultiplier = 1;
-      xMultiplier = -1;
+      xMultiplier = 1;
       yMultiplier = -1;
       step2YMult = 1;
       if (y_pos >= 3.75285) { // IF right
         Logger.recordOutput(loggingPrefix + "condition", 2);
-        goal = new Pose2d(Inches.of(41), Inches.of(177), new Rotation2d());
+        goal = new Pose2d(Inches.of(42.25), Inches.of(177), new Rotation2d());
         isFront = true;
       } else // ELSE left
       {
         step2YMult = -1;
         Logger.recordOutput(loggingPrefix + "condition", 4);
-        goal = new Pose2d(Inches.of(43), Inches.of(117), new Rotation2d());
+        goal = new Pose2d(Inches.of(40.75), Inches.of(117), new Rotation2d());
         isFront = false;
       }
     } // END IF BLUE

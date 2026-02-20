@@ -13,6 +13,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Climb;
@@ -36,7 +37,7 @@ public class ClimbAlign extends Command {
   SimpleMotorFeedforward xFF = new SimpleMotorFeedforward(xFFKs, 0, 0);
   SimpleMotorFeedforward omegaFF = new SimpleMotorFeedforward(omegaFFKs, 0, 0);
   SimpleMotorFeedforward yFF = new SimpleMotorFeedforward(0.23, 0, 0);
-  private final double stoppingDist = 0.13;
+  private final double stoppingDist = 0.12;
   private final String loggingPrefix = "commands/climb/";
   /** Creates a new Climb. */
   // Climbs the right side of the climb structure(from the perspective of the alliance station)
@@ -81,6 +82,8 @@ public class ClimbAlign extends Command {
   // 0 = x & omega   1 = turn wheels to 90deg   2 = y
   private int state = 0;
   // private boolean omegaPassed1, yPassed, xPassed = false;
+  private SwerveModulePosition[] snapshotModulesY = new SwerveModulePosition[4];
+
   @Override
   public void execute() {
     double passingX, passingY, passingOmega;
@@ -166,13 +169,14 @@ public class ClimbAlign extends Command {
     Logger.recordOutput(loggingPrefix + "startOfTransition", startOfTransition);
     Logger.recordOutput(
         loggingPrefix + "elapsedTime", System.currentTimeMillis() - startOfTransition);
-    if (state == 2 || (state == 1 && System.currentTimeMillis() - startOfTransition > 100)) {
+    if (state == 2 || (state == 1 && System.currentTimeMillis() - startOfTransition > 300)) {
       state = 2;
     } else if (doneFirstStage || state == 1) {
       state = 1;
       if (isFirstTime) {
         isFirstTime = false;
         startOfTransition = System.currentTimeMillis();
+        snapshotModulesY = s_drive.getModulePositions();
       }
     }
     // step1Done = SmartDashboard.getBoolean("step1Done", true);
@@ -193,7 +197,17 @@ public class ClimbAlign extends Command {
       passingX = 0;
       passingOmega = 0;
       Logger.recordOutput(loggingPrefix + "step1Done", true);
+      SwerveModulePosition[] currPodulePoses = s_drive.getModulePositions();
+      double avgDeltaY = 0;
+      for (int i = 0; i < 4; i++) {
+        avgDeltaY = (snapshotModulesY[i].distanceMeters - currPodulePoses[i].distanceMeters);
+      }
+      avgDeltaY = avgDeltaY / 4;
+      Logger.recordOutput(loggingPrefix + "avgDeltaYOdometry", avgDeltaY);
       double deltaY = sideDistCache.getDistanceFiltered() * -directionMult; // .4064=16in to m
+      if (!sideDistCache.measurementsValid()) {
+        deltaY = 0;
+      }
       passingY = -deltaY * climbParams.getStep2YMultiplier();
       Logger.recordOutput(loggingPrefix + "yDone", false);
       if (Math.abs(deltaY) <= stoppingDist) {
