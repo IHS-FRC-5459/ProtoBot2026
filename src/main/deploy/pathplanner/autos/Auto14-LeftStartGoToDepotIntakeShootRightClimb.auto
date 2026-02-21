@@ -57,6 +57,12 @@
           "data": {
             "pathName": "Auto14-RightClimbFromDepot"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "climbAlign"
+          }
         }
       ]
     }
