@@ -12,9 +12,7 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.DistanceCaching;
@@ -60,9 +58,6 @@ public class ClimbAlign extends Command {
   public void initialize() {
     time = 0;
     setIsFirstCall(true);
-    // omegaPassed1 = false;
-    // yPassed = false;
-    // xPassed = false;
     isDone = false;
     xPID.reset();
     yPID.reset();
@@ -74,7 +69,6 @@ public class ClimbAlign extends Command {
     omegaPID.setI(omegaPIDI);
     Pose2d currPose = s_drive.getPose();
     climbParams = new ClimbParams(currPose);
-    // doneAligningToStart = false;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -106,7 +100,6 @@ public class ClimbAlign extends Command {
     boolean xEnabled = true;
     boolean yEnabled = true;
     boolean omegaEnabled = true;
-    // DistanceCaching distCache = climbParams.getDistCache();
     DistanceCaching distCache = s_climb.getDistanceCacheBack();
     if (climbParams.getIsFront()) {
       distCache = s_climb.getDistanceCacheFront();
@@ -117,111 +110,63 @@ public class ClimbAlign extends Command {
     // Blue alliance
 
     // Note, the 2ft buffer distance is now gone
-    boolean shouldTurn = false;
     double directionMult = 1;
     Pose2d climbPose = climbParams.getGoal();
     Logger.recordOutput(loggingPrefix + "climbPose", climbPose);
     // X
-    int numValidRangeMeasurements = 0; // Purposely doesnt use distCache to avoid runtime changes
-    double xDist = 0;
-    DoubleSupplier turnCommandSupplier = () -> 0;
+
+    DoubleSupplier omegaSupplier;
+    DoubleSupplier xSupplier;
+    DoubleSupplier ySupplier;
+
     if (distCache.bothValid()) {
-      Logger.recordOutput(loggingPrefix + "bothvalid", 2);
-      xDist = distCache.getXDistance();
-      numValidRangeMeasurements = 2;
+      passingX = distCache.getXDistance();
+      if (Math.abs(passingX) <= 0.0381) { // 1.5in
+        xFF.setKs(0);
+      }
       double rangeDiff = distCache.getDifference();
-      shouldTurn = Math.abs(rangeDiff) > 0.005; // 0.005 is deadaspace
-      Logger.recordOutput(loggingPrefix + "rangeDiff", rangeDiff);
-      Logger.recordOutput(loggingPrefix + "Leftvalid", distCache.leftMeasurementsValid());
-      Logger.recordOutput(loggingPrefix + "rightvalid", distCache.rightMeasurementsValid());
+      if (rangeDiff <= 0.005) {
+        omegaFF.setKs(0);
+      }
       passingOmega = rangeDiff * climbParams.getOmegaMultiplier();
     } else {
       Logger.recordOutput(loggingPrefix + "bothvalid", 1);
-      shouldTurn = false;
       if (distCache.rightMeasurementsValid()) {
-        xDist = distCache.getRightFiltered();
-        numValidRangeMeasurements = 1;
+        passingX = distCache.getRightFiltered();
+        if (Math.abs(passingX) <= 0.0381) { // 1.5in
+          xFF.setKs(0);
+        }
       } else if (distCache.leftMeasurementsValid()) {
-        xDist = distCache.getLeftFiltered();
-        numValidRangeMeasurements = 1;
+        passingX = distCache.getLeftFiltered();
+        if (Math.abs(passingX) <= 0.0381) { // 1.5in
+          xFF.setKs(0);
+        }
       } else {
+        passingX = 0;
         Logger.recordOutput(loggingPrefix + "bothvalid", 0);
-        numValidRangeMeasurements = 0;
       }
       passingOmega = 0;
     }
-    DoubleSupplier xSupplier;
-    boolean xSkip = false;
-    if (numValidRangeMeasurements == 2 || numValidRangeMeasurements == 1) {
-      double x = (xDist - climbPose.getX());
-      xSkip = Math.abs(x) <= 0.012;
-      Logger.recordOutput(loggingPrefix + "x", x);
-      passingX = x * climbParams.getXMultiplier();
-    } else {
-      passingX = 0;
+
+    double deltaY = sideDistCache.getDistanceFiltered() * -directionMult; // .4064=16in to m
+    if (!sideDistCache.measurementsValid()) {
+      // Use localization
+      Pose2d currPose = s_drive.getPose();
+      deltaY = Math.abs(climbPose.getY() - currPose.getY());
     }
-    // Works for both alliances
-    //
-    DoubleSupplier ySupplier;
-    // xSkip && !shouldTurn
-    boolean doneFirstStage = xSkip && !shouldTurn;
-    Logger.recordOutput(loggingPrefix + "doneFirstStage", doneFirstStage);
-    Logger.recordOutput(loggingPrefix + "startOfTransition", startOfTransition);
-    Logger.recordOutput(
-        loggingPrefix + "elapsedTime", System.currentTimeMillis() - startOfTransition);
-    if (state == 2 || (state == 1 && System.currentTimeMillis() - startOfTransition > 300)) {
-      state = 2;
-    } else if (doneFirstStage || state == 1) {
-      state = 1;
-      if (isFirstTime) {
-        isFirstTime = false;
-        startOfTransition = System.currentTimeMillis();
-        snapshotModulesY = s_drive.getModulePositions();
-      }
-    }
-    // step1Done = SmartDashboard.getBoolean("step1Done", true);
-    Logger.recordOutput(loggingPrefix + "state", state);
-    passingY = 0;
-    boolean runSpeeds = true;
-    if (state == 1) {
-      passingX = 0;
-      passingOmega = 0;
+    passingY = -deltaY * climbParams.getStep2YMultiplier();
+    Logger.recordOutput(loggingPrefix + "yDone", false);
+    if (Math.abs(deltaY) <= stoppingDist) {
+      Logger.recordOutput(loggingPrefix + "yDone", true);
+      isDone = true;
       passingY = 0;
-      runSpeeds = false;
-      SwerveModuleState[] states = new SwerveModuleState[4];
-      for (int i = 0; i < 4; i++) {
-        states[i] = new SwerveModuleState(0, Rotation2d.fromDegrees(270));
-      }
-      s_drive.runModuleStates(states);
-    } else if (state == 2) {
-      passingX = 0;
-      passingOmega = 0;
-      Logger.recordOutput(loggingPrefix + "step1Done", true);
-      SwerveModulePosition[] currPodulePoses = s_drive.getModulePositions();
-      double avgDeltaY = 0;
-      for (int i = 0; i < 4; i++) {
-        avgDeltaY = (snapshotModulesY[i].distanceMeters - currPodulePoses[i].distanceMeters);
-      }
-      avgDeltaY = avgDeltaY / 4;
-      Logger.recordOutput(loggingPrefix + "avgDeltaYOdometry", avgDeltaY);
-      double deltaY = sideDistCache.getDistanceFiltered() * -directionMult; // .4064=16in to m
-      if (!sideDistCache.measurementsValid()) {
-        deltaY = 0;
-      }
-      passingY = -deltaY * climbParams.getStep2YMultiplier();
-      Logger.recordOutput(loggingPrefix + "yDone", false);
-      if (Math.abs(deltaY) <= stoppingDist) {
-        Logger.recordOutput(loggingPrefix + "yDone", true);
-        isDone = true;
-        passingY = 0;
-      }
     }
 
     double pidVoltsOmega = omegaPID.calculate(passingOmega, 0) * -1;
     double ffVoltsOmega = omegaFF.calculate(passingOmega, 0);
     Logger.recordOutput(loggingPrefix + "controllers/omega/pidVolts", pidVoltsOmega);
     Logger.recordOutput(loggingPrefix + "controllers/omega/ffVolts", ffVoltsOmega);
-    turnCommandSupplier = () -> pidVoltsOmega + ffVoltsOmega;
+    omegaSupplier = () -> pidVoltsOmega + ffVoltsOmega;
 
     double pidVoltsX = xPID.calculate(passingX, 0);
     double ffVoltsX = xFF.calculate(passingX, 0) * -1;
@@ -244,7 +189,7 @@ public class ClimbAlign extends Command {
       xSupplier = () -> 0;
     }
     if (!omegaEnabled) {
-      turnCommandSupplier = () -> 0;
+      omegaSupplier = () -> 0;
     }
 
     Logger.recordOutput(loggingPrefix + "passing/xPassing", passingX);
@@ -252,10 +197,7 @@ public class ClimbAlign extends Command {
     Logger.recordOutput(loggingPrefix + "passing/yPassing", passingY);
 
     // omegaPassed = omegaPassed && time < 100; // bad practice, but its fine :)
-    if (runSpeeds) {
-      joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, turnCommandSupplier, shouldTurn);
-    }
-    Logger.recordOutput(loggingPrefix + "Xdist", xDist);
+    joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, omegaSupplier);
   }
 
   // Called once the command ends or is interrupted.

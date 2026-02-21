@@ -23,6 +23,7 @@ public class ShootAlign extends Command {
   Drive s_drive;
   DoubleSupplier xSupplier, ySupplier;
   LED s_led;
+  private static final String loggingPrefix = "commands/shootAlign/";
   /** Creates a new ShootAlign. */
   public ShootAlign(
       Drive s_drive, LED s_led, DoubleSupplier controllerX, DoubleSupplier controllerY) {
@@ -52,28 +53,32 @@ public class ShootAlign extends Command {
     if (currPose.getX() > aprilTagLayout.getFieldLength() / 2) { // Far-side(red)
       hubPose = new Pose2d(Inches.of(469.11), Inches.of(158.84), new Rotation2d(0));
     }
-    Logger.recordOutput("Hub pose", hubPose);
+    Logger.recordOutput(loggingPrefix + "Hubpose", hubPose);
     double deltaX = (currPose.getX() - hubPose.getX());
     double deltaY = currPose.getY() - hubPose.getY();
-    Logger.recordOutput("deltaX", deltaX);
-    Logger.recordOutput("deltaY", deltaY);
+    Logger.recordOutput(loggingPrefix + "deltaX", deltaX);
+    Logger.recordOutput(loggingPrefix + "deltaY", deltaY);
     Rotation2d atanCalc = new Rotation2d(Math.atan(deltaY / deltaX));
-    Logger.recordOutput("athancalc", atanCalc.getDegrees());
+    Logger.recordOutput(loggingPrefix + "athancalc", atanCalc.getDegrees());
     // in radians
     double desiredRot = atanCalc.getRadians(); // - currPose.getRotation().getRadians();
-    Logger.recordOutput("before changing desired rot ", 180 * desiredRot / Math.PI);
+    Logger.recordOutput(loggingPrefix + "beforechangingdesiredrot", 180 * desiredRot / Math.PI);
     if (desiredRot < -Math.PI) {
       desiredRot = 2 * Math.PI + desiredRot;
     }
     if (desiredRot > Math.PI) {
       desiredRot = -(2 * Math.PI - desiredRot);
     }
+    if (currPose.getX()
+        >= aprilTagLayout.getFieldLength() / 2) { // If red alliance, go opposite way
+      desiredRot += Math.PI;
+    }
     double passingOmega = desiredRot;
     // x and y suppliers to be changed for future
     // Rotation2d desiredRot = new Rotation2d(Degrees.of(15));
     Supplier<Rotation2d> omegaSupplier = () -> new Rotation2d(passingOmega); // desiredRot;
     // DoubleSupplier omegaSupplier = () -> desiredRot.getRadians();
-    Logger.recordOutput("DesiredRot", 180 * desiredRot / Math.PI);
+    Logger.recordOutput(loggingPrefix + "DesiredRot", 180 * desiredRot / Math.PI);
     joystickDriveAtAngleCustom(s_drive, xSupplier, ySupplier, omegaSupplier);
   }
 

@@ -15,6 +15,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -39,15 +40,17 @@ import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
-  private static final double ANGLE_KP = 2.0;
+  private static final double ANGLE_KP = 2.5;
   private static final double ANGLE_KD = 0.4;
-  private static final double ANGLE_MAX_VELOCITY = 8.0;
+  private static final double ANGLE_KS = 0.1;
+  private static final double ANGLE_MAX_VELOCITY = 10.0;
   private static final double ANGLE_MAX_ACCELERATION = 20.0;
   private static final double FF_START_DELAY = 2.0; // Secs
   private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
   private static ProfiledPIDController angleController;
+  private static SimpleMotorFeedforward angleff;
 
   private DriveCommands() {}
 
@@ -236,6 +239,7 @@ public class DriveCommands {
               ANGLE_KD,
               new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
       angleController.enableContinuousInput(-Math.PI, Math.PI);
+      angleff = new SimpleMotorFeedforward(ANGLE_KS, 0, 0);
     }
     if (isFirstCall) {
       angleController.reset(drive.getRotation().getRadians());
@@ -249,7 +253,10 @@ public class DriveCommands {
     // Calculate angular speed
     double omega =
         angleController.calculate(
-            drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
+                drive.getRotation().getRadians(), rotationSupplier.get().getRadians())
+            + angleff.calculate(0);
+
+    omega = MathUtil.applyDeadband(omega, DEADBAND);
 
     // Convert to field relative speeds & send command
     ChassisSpeeds speeds =
