@@ -120,7 +120,7 @@ public class ClimbAlign extends Command {
     DoubleSupplier ySupplier;
 
     if (distCache.bothValid()) {
-      passingX = distCache.getXDistance();
+      passingX = (distCache.getXDistance() - climbPose.getX()) * climbParams.getXMultiplier();
       if (Math.abs(passingX) <= 0.0381) { // 1.5in
         xFF.setKs(0);
       }
@@ -130,14 +130,13 @@ public class ClimbAlign extends Command {
       }
       passingOmega = rangeDiff * climbParams.getOmegaMultiplier();
     } else {
-      Logger.recordOutput(loggingPrefix + "bothvalid", 1);
       if (distCache.rightMeasurementsValid()) {
-        passingX = distCache.getRightFiltered();
+        passingX = (distCache.getRightFiltered() - climbPose.getX()) * climbParams.getXMultiplier();
         if (Math.abs(passingX) <= 0.0381) { // 1.5in
           xFF.setKs(0);
         }
       } else if (distCache.leftMeasurementsValid()) {
-        passingX = distCache.getLeftFiltered();
+        passingX = (distCache.getLeftFiltered() - climbPose.getX()) * climbParams.getXMultiplier();
         if (Math.abs(passingX) <= 0.0381) { // 1.5in
           xFF.setKs(0);
         }
@@ -152,7 +151,7 @@ public class ClimbAlign extends Command {
     if (!sideDistCache.measurementsValid()) {
       // Use localization
       Pose2d currPose = s_drive.getPose();
-      deltaY = Math.abs(climbPose.getY() - currPose.getY());
+      deltaY = Math.abs(currPose.getY() - climbPose.getY()) * -directionMult;
     }
     passingY = -deltaY * climbParams.getStep2YMultiplier();
     Logger.recordOutput(loggingPrefix + "yDone", false);
@@ -197,7 +196,7 @@ public class ClimbAlign extends Command {
     Logger.recordOutput(loggingPrefix + "passing/yPassing", passingY);
 
     // omegaPassed = omegaPassed && time < 100; // bad practice, but its fine :)
-    joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, omegaSupplier);
+    joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, omegaSupplier, true);
   }
 
   // Called once the command ends or is interrupted.
