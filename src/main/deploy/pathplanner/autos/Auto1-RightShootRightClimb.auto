@@ -21,6 +21,12 @@
           "data": {
             "pathName": "Auto1-ShootGoToRightClimb-RightClimbInGeneral"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "climbAlign"
+          }
         }
       ]
     }

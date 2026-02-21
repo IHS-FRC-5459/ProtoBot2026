@@ -21,6 +21,12 @@
           "data": {
             "pathName": "Auto6-GoFromShootToLeftClimb"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "climbAlign"
+          }
         }
       ]
     }
