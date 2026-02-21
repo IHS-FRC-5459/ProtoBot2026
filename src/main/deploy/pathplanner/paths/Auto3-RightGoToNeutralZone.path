@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.331530249110321,
-        "y": 0.6835112692763936
+        "x": 2.4442692307692324,
+        "y": 1.3256282051282051
       },
       "isLocked": false,
       "linkedName": null
@@ -20,12 +20,12 @@
         "y": 0.6404744958481603
       },
       "prevControl": {
-        "x": 3.1710053150087507,
-        "y": 0.5993747490218211
+        "x": 3.171005083884486,
+        "y": 0.5993761357914501
       },
       "nextControl": {
-        "x": 3.74037959667853,
-        "y": 0.694270462633451
+        "x": 3.740379899199937,
+        "y": 0.6942686474735372
       },
       "isLocked": false,
       "linkedName": null
@@ -90,10 +90,10 @@
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Ben's Auto",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 64.654
   },
   "useDefaultConstraints": true
 }
