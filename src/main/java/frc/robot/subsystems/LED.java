@@ -4,7 +4,7 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.controls.SingleFadeAnimation;
+import com.ctre.phoenix6.controls.EmptyControl;
 import com.ctre.phoenix6.controls.SolidColor;
 import com.ctre.phoenix6.hardware.CANdle;
 import com.ctre.phoenix6.signals.RGBWColor;
@@ -13,10 +13,12 @@ import frc.robot.Constants.Colors;
 import org.littletonrobotics.junction.Logger;
 
 public class LED extends SubsystemBase {
-  private final int framerate = 20;
   private final int rainbowFramerate = 100;
   private final int startIndex = 0;
   private final int endIndex = 53 + 8; // 8 is from the 8 on the candle itself
+  private boolean isBlinking = false;
+  private long lastTransition = 0;
+  private boolean isOn = true;
   // status booleans
   private boolean intaking,
       shooting,
@@ -32,6 +34,7 @@ public class LED extends SubsystemBase {
 
   public LED(CANdle candle) {
     this.candle = candle;
+    setLEDs(Colors.blank);
   }
 
   // sets the colors of an LED
@@ -39,18 +42,17 @@ public class LED extends SubsystemBase {
     SolidColor solidColor = new SolidColor(startIndex, endIndex);
     solidColor = solidColor.withColor(color);
     candle.setControl(solidColor);
+    this.isBlinking = false;
   }
 
-  private void setLEDs(RGBWColor color, double frameRate) {
-    SingleFadeAnimation animation = new SingleFadeAnimation(startIndex, endIndex);
-    animation = animation.withColor(color);
-    animation = animation.withFrameRate(frameRate);
-    candle.setControl(animation);
-    candle.close();
-    System.out.println("Setting to do something");
+  private void setLEDs(RGBWColor color, boolean isBlinking) {
+    SolidColor solidColor = new SolidColor(startIndex, endIndex);
+    solidColor = solidColor.withColor(color);
+    candle.setControl(solidColor);
+    this.isBlinking = isBlinking;
   }
 
-  private void doRainbow() {
+  private void doRainbow() { // This works, but it messes up other stuff
     // RainbowAnimation animation = new RainbowAnimation(startIndex, endIndex);
     // animation.withFrameRate(rainbowFramerate);
     // candle.setControl(animation);
@@ -95,27 +97,26 @@ public class LED extends SubsystemBase {
   }
 
   private void updateLEDs() {
+    candle.clearStickyFaults();
     // This is just an exaple cascenario
     if (shooting) {
-      setLEDs(Colors.green, framerate);
+      setLEDs(Colors.green, true);
       Logger.recordOutput(loggingPrefix + "led", "greenBlink");
       Logger.recordOutput(loggingPrefix + "state", "shooting");
     } else if (elevatorGoingUp) {
-      setLEDs(Colors.purple, framerate);
+      setLEDs(Colors.purple, true);
       Logger.recordOutput(loggingPrefix + "led", "purpleBlink");
       Logger.recordOutput(loggingPrefix + "state", "elevatorGoingUp");
     } else if (elevatorGoingDown) {
-      setLEDs(Colors.red, framerate);
+      setLEDs(Colors.red, true);
       Logger.recordOutput(loggingPrefix + "led", "redBlink");
-
       Logger.recordOutput(loggingPrefix + "state", "elevatorGoingDown");
-
     } else if (passing) {
-      setLEDs(Colors.blue, framerate);
+      setLEDs(Colors.blue, true);
       Logger.recordOutput(loggingPrefix + "led", "blueBlink");
       Logger.recordOutput(loggingPrefix + "state", "passing");
     } else if (intaking) {
-      setLEDs(Colors.yellow, framerate);
+      setLEDs(Colors.yellow, true);
       Logger.recordOutput(loggingPrefix + "led", "yellowBlink");
       Logger.recordOutput(loggingPrefix + "state", "intaking");
     } else if (canShoot) {
@@ -123,11 +124,11 @@ public class LED extends SubsystemBase {
       Logger.recordOutput(loggingPrefix + "led", "green");
       Logger.recordOutput(loggingPrefix + "state", "canShot");
     } else if (isAngry) {
-      setLEDs(Colors.red);
+      setLEDs(Colors.red, true);
       Logger.recordOutput(loggingPrefix + "led", "red");
       Logger.recordOutput(loggingPrefix + "state", "Angry");
     } else if (isHappy) {
-      setLEDs(Colors.yellow);
+      setLEDs(Colors.yellow, true);
       Logger.recordOutput(loggingPrefix + "led", "yellow");
       Logger.recordOutput(loggingPrefix + "state", "Happy");
     } else if (isRainbow) {
@@ -135,9 +136,19 @@ public class LED extends SubsystemBase {
       Logger.recordOutput(loggingPrefix + "led", "rainbow");
       Logger.recordOutput(loggingPrefix + "state", "rainbow");
     } else {
-      setLEDs(Colors.blank);
+      // setLEDs(Colors.blank);
+      candle.setControl(new EmptyControl());
+
       Logger.recordOutput(loggingPrefix + "led", "blank");
       Logger.recordOutput(loggingPrefix + "state", "nothing");
+    }
+    long currTime = System.currentTimeMillis();
+    if (currTime - lastTransition >= 1000) {
+      isOn = !isOn;
+      lastTransition = currTime;
+    }
+    if (!isOn && isBlinking) {
+      setLEDs(Colors.blank);
     }
   }
 
