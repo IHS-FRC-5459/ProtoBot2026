@@ -51,12 +51,11 @@ public class DistanceSide extends SubsystemBase {
   }
 
   public boolean measurementsValid() {
-    return getDistanceFiltered() != -1;
+    return getDistanceFiltered() >= 0;
   }
 
   @Override
   public void periodic() {
-    Logger.recordOutput(loggingPrefix + "isValidNative", sensor.isRangeValid());
     // This method will be called once per scheduler run
     double rawDistance = sensor.getRange() - 30;
     if (sensor.getStatus() != TimeOfFlight.Status.Valid) {
