@@ -27,7 +27,7 @@ public class ClimbAlign extends Command {
   Drive s_drive;
   Climb s_climb;
   DistanceSide sideDistCache;
-  private final double xFFKs = 0.12;
+  private final double xFFKs = 0.2;
   private final double omegaFFKs = 0.2;
   private final double omegaPIDI = 0;
   PIDController yPID = new PIDController(0.7, 0.03, 0.2);
@@ -120,7 +120,8 @@ public class ClimbAlign extends Command {
 
     if (distCache.bothValid()) {
       passingX = (distCache.getXDistance() - climbPose.getX()) * climbParams.getXMultiplier();
-      if (Math.abs(passingX) <= 0.0381) { // 1.5in
+      if (Math.abs(passingX) <= 0.015) {
+        Logger.recordOutput(loggingPrefix + "setXFFTo0", true);
         xFF.setKs(0);
       }
       double rangeDiff = distCache.getDifference();
@@ -153,8 +154,7 @@ public class ClimbAlign extends Command {
     if (!sideDistCache.measurementsValid()) {
       // Use localization
       Pose2d currPose = s_drive.getPose();
-      deltaY = Math.abs(climbPose.getY() - currPose.getY());
-      deltaY = 0;
+      deltaY = Math.abs(climbPose.getY() - currPose.getY()) * -directionMult;
     }
     passingY = -deltaY * climbParams.getStep2YMultiplier();
     Logger.recordOutput(loggingPrefix + "yDone", false);
@@ -197,6 +197,7 @@ public class ClimbAlign extends Command {
     Logger.recordOutput(loggingPrefix + "passing/yPassing", passingY);
 
     // omegaPassed = omegaPassed && time < 100; // bad practice, but its fine :)
+    Logger.recordOutput(loggingPrefix + "xSupplier", xSupplier.getAsDouble());
     joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, omegaSupplier, true);
   }
 
