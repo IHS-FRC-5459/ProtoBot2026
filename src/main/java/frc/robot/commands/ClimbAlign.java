@@ -9,6 +9,7 @@ import static frc.robot.commands.DriveCommands.joystickDriveRelativeCustom;
 import static frc.robot.commands.DriveCommands.setIsFirstCall;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -26,8 +27,8 @@ public class ClimbAlign extends Command {
   Drive s_drive;
   Climb s_climb;
   DistanceSide sideDistCache;
-  private final double xFFKs = 0.12;
-  private final double omegaFFKs = 0.15;
+  private final double xFFKs = 0.2;
+  private final double omegaFFKs = 0.2;
   private final double omegaPIDI = 0;
   PIDController yPID = new PIDController(0.7, 0.03, 0.2);
   PIDController xPID = new PIDController(1.5, 0.02, 0.03);
@@ -63,7 +64,6 @@ public class ClimbAlign extends Command {
     yPID.reset();
     omegaPID.reset();
     isFirstTime = true;
-    state = 0;
     xFF.setKs(xFFKs);
     omegaFF.setKs(omegaFFKs);
     omegaPID.setI(omegaPIDI);
@@ -74,7 +74,6 @@ public class ClimbAlign extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   private boolean isDone = false;
   // 0 = x & omega   1 = turn wheels to 90deg   2 = y
-  private int state = 0;
   // private boolean omegaPassed1, yPassed, xPassed = false;
   private SwerveModulePosition[] snapshotModulesY = new SwerveModulePosition[4];
 
@@ -121,11 +120,15 @@ public class ClimbAlign extends Command {
 
     if (distCache.bothValid()) {
       passingX = (distCache.getXDistance() - climbPose.getX()) * climbParams.getXMultiplier();
-      if (Math.abs(passingX) <= 0.0381) { // 1.5in
+      if (Math.abs(passingX) <= 0.015) {
+        Logger.recordOutput(loggingPrefix + "setXFFTo0", true);
         xFF.setKs(0);
       }
       double rangeDiff = distCache.getDifference();
-      if (rangeDiff <= 0.005) {
+      Logger.recordOutput(loggingPrefix + "hitCondition", false);
+      if (Math.abs(rangeDiff) <= 0.005) {
+        Logger.recordOutput(loggingPrefix + "hitCondition", true);
+        Logger.recordOutput(loggingPrefix + "hasHitCondition", true);
         omegaFF.setKs(0);
       }
       passingOmega = rangeDiff * climbParams.getOmegaMultiplier();
@@ -151,7 +154,7 @@ public class ClimbAlign extends Command {
     if (!sideDistCache.measurementsValid()) {
       // Use localization
       Pose2d currPose = s_drive.getPose();
-      deltaY = Math.abs(currPose.getY() - climbPose.getY()) * -directionMult;
+      deltaY = Math.abs(climbPose.getY() - currPose.getY()) * -directionMult;
     }
     passingY = -deltaY * climbParams.getStep2YMultiplier();
     Logger.recordOutput(loggingPrefix + "yDone", false);
@@ -160,6 +163,7 @@ public class ClimbAlign extends Command {
       isDone = true;
       passingY = 0;
     }
+    System.out.println("Command running");
 
     double pidVoltsOmega = omegaPID.calculate(passingOmega, 0) * -1;
     double ffVoltsOmega = omegaFF.calculate(passingOmega, 0);
@@ -177,25 +181,23 @@ public class ClimbAlign extends Command {
     double ffVoltsY = yFF.calculate(passingY, 0) * -1;
     Logger.recordOutput(loggingPrefix + "controllers/y/pidVolts", 0);
     Logger.recordOutput(loggingPrefix + "controllers/y/ffVolts", 0);
-    ySupplier = () -> pidVoltsY + ffVoltsY;
-    if (state == 1) {
-      ySupplier = () -> 0.1;
-    }
-    if (!yEnabled) {
-      ySupplier = () -> 0;
-    }
-    if (!xEnabled) {
-      xSupplier = () -> 0;
-    }
-    if (!omegaEnabled) {
-      omegaSupplier = () -> 0;
-    }
+    ySupplier = () -> MathUtil.clamp(pidVoltsY + ffVoltsY, -0.5, 0.5);
+    // if (!yEnabled) {
+    //   ySupplier = () -> 0;
+    // }
+    // if (!xEnabled) {
+    //   xSupplier = () -> 0;
+    // }
+    // if (!omegaEnabled) {
+    //   omegaSupplier = () -> 0;
+    // }
 
     Logger.recordOutput(loggingPrefix + "passing/xPassing", passingX);
     Logger.recordOutput(loggingPrefix + "passing/omegaPassing", passingOmega);
     Logger.recordOutput(loggingPrefix + "passing/yPassing", passingY);
 
     // omegaPassed = omegaPassed && time < 100; // bad practice, but its fine :)
+    Logger.recordOutput(loggingPrefix + "xSupplier", xSupplier.getAsDouble());
     joystickDriveRelativeCustom(s_drive, xSupplier, ySupplier, omegaSupplier, true);
   }
 
