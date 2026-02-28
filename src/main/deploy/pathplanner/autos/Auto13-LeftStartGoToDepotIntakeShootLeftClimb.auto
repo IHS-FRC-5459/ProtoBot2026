@@ -13,19 +13,7 @@
         {
           "type": "named",
           "data": {
-            "name": "hubAlign"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.5
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Auto13-MoveFartherBackIntoDepotToCollectMoreBalls"
+            "name": "Intake"
           }
         },
         {
@@ -37,7 +25,31 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 1.5
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Auto13-MoveFartherBackIntoDepotToCollectMoreBalls"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "hubAlign"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
           }
         },
         {
