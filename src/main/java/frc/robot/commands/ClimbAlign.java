@@ -30,7 +30,7 @@ public class ClimbAlign extends Command {
   private final double xFFKs = 0.2;
   private final double omegaFFKs = 0.2;
   private final double omegaPIDI = 0;
-  PIDController yPID = new PIDController(0.7, 0.03, 0.2);
+  PIDController yPID = new PIDController(0.65, 0.03, 0.2);
   PIDController xPID = new PIDController(1.5, 0.02, 0.03);
   PIDController omegaPID = new PIDController(2.5, omegaPIDI, 0.02);
   SimpleMotorFeedforward xFF = new SimpleMotorFeedforward(xFFKs, 0, 0);

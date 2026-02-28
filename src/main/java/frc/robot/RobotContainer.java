@@ -57,6 +57,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import java.util.function.DoubleSupplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -184,7 +185,17 @@ public class RobotContainer {
               System.out.println("hi");
             }));
     NamedCommands.registerCommand("climbAlign", new ClimbAlign(drive, s_climb));
-
+    DoubleSupplier controllerY =
+        () -> 0; // Here just to use hub align when testing CHANGE LATER/DISCUSS WITH COLE
+    DoubleSupplier controllerX =
+        () -> 0; // Here just to use hub align when testing CHANGE LATER/DISCUSS WITH COLE
+    NamedCommands.registerCommand(
+        "hubAlign",
+        new ShootAlign(
+            drive,
+            s_led,
+            controllerX,
+            controllerY)); // Not sure if this is right - talk about with Cole later
     // Set up auto routines
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Chooser", autoChooser);
