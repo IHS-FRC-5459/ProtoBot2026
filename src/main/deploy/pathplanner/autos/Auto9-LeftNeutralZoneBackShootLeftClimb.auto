@@ -11,47 +11,9 @@
           }
         },
         {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 1.0
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Auto9-GoFromLeftNeutralZoneBackToShoot"
-          }
-        },
-        {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "hubAlign"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 0.75
-                }
-              }
-            ]
           }
         },
         {
@@ -64,12 +26,6 @@
           "type": "path",
           "data": {
             "pathName": "Auto7-ShootGoToLeftClimb"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "climbAlign"
           }
         }
       ]
