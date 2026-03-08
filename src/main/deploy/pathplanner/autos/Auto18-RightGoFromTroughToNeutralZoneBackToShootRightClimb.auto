@@ -55,22 +55,54 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "hubAlign"
+                  "name": "elevatorUp"
                 }
               },
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.75
+                  "waitTime": 0.02
                 }
               }
             ]
           }
         },
         {
-          "type": "named",
+          "type": "race",
           "data": {
-            "name": "Shoot"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "hubAlign"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 3.0
+                }
+              }
+            ]
           }
         },
         {
@@ -88,7 +120,7 @@
         {
           "type": "named",
           "data": {
-            "name": "climb"
+            "name": "elevatorDown"
           }
         }
       ]

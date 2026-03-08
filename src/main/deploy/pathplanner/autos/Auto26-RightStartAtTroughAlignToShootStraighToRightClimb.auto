@@ -76,13 +76,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Auto6-GoFromShootToLeftClimb"
+            "pathName": "Auto5-GoFromShootToRightClimb"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "climbAlign"
+            "pathName": "Auto22-GoFromRightClimbPositionToClimb"
           }
         },
         {

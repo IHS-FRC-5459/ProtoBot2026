@@ -46,7 +46,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "Auto15-LeftStartGoToDepotFromTrough1"
+                        "pathName": "Auto13-LeftStartGoToDepot1"
                       }
                     }
                   ]
@@ -164,9 +164,9 @@
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "climbAlign"
+            "pathName": "Auto22-GoFromRightClimbPositionToClimb"
           }
         },
         {

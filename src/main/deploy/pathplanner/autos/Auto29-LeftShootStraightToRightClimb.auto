@@ -11,28 +11,9 @@
           }
         },
         {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "elevatorUp"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 0.02
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "Auto5-StartAtTroughGoToShoot"
+            "pathName": "Auto7-AlignToShootGoToHub"
           }
         },
         {
@@ -76,13 +57,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Auto6-GoFromShootToLeftClimb"
+            "pathName": "Auto8-ShootGoToRightClimb"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "climbAlign"
+            "pathName": "Auto22-GoFromRightClimbPositionToClimb"
           }
         },
         {
